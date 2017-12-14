@@ -1,0 +1,1 @@
+flask-application-factory>=0.1
