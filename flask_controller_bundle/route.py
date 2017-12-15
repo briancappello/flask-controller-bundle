@@ -18,7 +18,7 @@ class Route:
         if self._rule:
             return self._rule
         elif self._controller_name:
-            raise NotImplementedError('use ControllerClass.route_rule(route)')
+            return None
         return method_name_to_url(self.method_name)
 
     @rule.setter

@@ -70,7 +70,7 @@ class Controller(metaclass=ControllerMeta):
 
     @classmethod
     def route_rule(cls, route: Route):
-        rule = route._rule
+        rule = route.rule
         if not rule:
-            rule = f"{method_name_to_url(route.method_name)}"
+            rule = method_name_to_url(route.method_name)
         return join(cls.url_prefix, rule)

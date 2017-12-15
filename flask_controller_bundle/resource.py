@@ -1,7 +1,8 @@
 from .controller import Controller
 from .metaclasses import ResourceMeta
 from .route import Route
-from .utils import controller_name, join, pluralize, rename_parent_resource_param_name
+from .utils import (controller_name, join, pluralize, method_name_to_url,
+                    rename_parent_resource_param_name)
 
 
 class ResourcePrefixDescriptor:
@@ -45,21 +46,17 @@ class Resource(Controller, metaclass=ResourceMeta):
 
     @classmethod
     def route_rule(cls, route: Route):
-        rule = route._rule
-        if rule and route.is_member:
-            rule = rename_parent_resource_param_name(
-                cls, join(cls.member_param, rule))
-        elif not rule:
-            method_slug = f"{route.method_name.replace('_', '-')}"
+        rule = route.rule
+        if not rule:
             if route.method_name in cls.index_method_map:
                 rule = '/'
             elif route.method_name in cls.member_method_map:
                 rule = cls.member_param
-            elif route.is_member:
-                rule = rename_parent_resource_param_name(
-                    cls, join(cls.member_param, method_slug))
             else:
-                rule = method_slug
+                rule = method_name_to_url(route.method_name)
+        if route.is_member:
+            rule = rename_parent_resource_param_name(
+                cls, join(cls.member_param, rule))
         return join(cls.url_prefix, rule)
 
     @classmethod
