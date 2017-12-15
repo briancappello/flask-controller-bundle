@@ -25,6 +25,8 @@ class ControllerMeta(type):
             route = getattr(method, ROUTE_ATTR, None)
             if not route:
                 route = Route(None, method)
+            route.blueprint = clsdict.get('blueprint',
+                                          deep_getattr(bases, 'blueprint'))
             route._controller_name = name
             routes[method_name] = route
 

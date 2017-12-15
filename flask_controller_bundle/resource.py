@@ -5,23 +5,16 @@ from .utils import (controller_name, join, pluralize, method_name_to_url,
                     rename_parent_resource_param_name)
 
 
-class ResourcePrefixDescriptor:
+class ResourceUrlPrefixDescriptor:
     def __get__(self, instance, cls):
-        return pluralize(controller_name(cls))
-
-
-class UrlPrefixDescriptor:
-    def __get__(self, instance, cls):
-        return join(cls.blueprint and cls.blueprint.url_prefix or '',
-                    cls.resource_prefix)
+        return f'/{pluralize(controller_name(cls))}'
 
 
 class Resource(Controller, metaclass=ResourceMeta):
     __abstract__ = True
 
+    url_prefix = ResourceUrlPrefixDescriptor()
     member_param = '<int:id>'
-    resource_prefix = ResourcePrefixDescriptor()
-    url_prefix = UrlPrefixDescriptor()
 
     index_method_map = {
         'index': ['GET', 'HEAD'],

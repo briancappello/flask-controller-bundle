@@ -1,17 +1,32 @@
-from .utils import method_name_to_url, snake_case
+from .utils import join, method_name_to_url, snake_case
 
 
 class Route:
-    def __init__(self, rule, view_func, endpoint=None, is_member=False,
-                 defaults=None, methods=None, **rule_options):
+    def __init__(self, rule, view_func, blueprint=None, defaults=None,
+                 endpoint=None, is_member=False, methods=None, **rule_options):
         self._rule = rule
         self.view_func = view_func
+        self.blueprint = blueprint
         self._endpoint = endpoint
         self.is_member = is_member
         self.rule_options = rule_options
         self.rule_options['defaults'] = defaults
         self.rule_options['methods'] = methods
+
+        # extra private (should only be used by controller metaclasses)
         self._controller_name = None
+
+    @property
+    def bp_prefix(self):
+        if not self.blueprint:
+            return None
+        return self.blueprint.url_prefix
+
+    @property
+    def _full_rule(self):
+        if not self.rule:
+            raise Exception(f'{self} is not fully initialized (missing url rule)')
+        return join(self.bp_prefix, self.rule)
 
     @property
     def rule(self):

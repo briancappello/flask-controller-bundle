@@ -13,11 +13,6 @@ class TemplateFolderDescriptor:
         return controller_name(cls)
 
 
-class UrlPrefixDescriptor:
-    def __get__(self, instance, cls):
-        return cls.blueprint and cls.blueprint.url_prefix or ''
-
-
 class Controller(metaclass=ControllerMeta):
     __abstract__ = True
 
@@ -26,7 +21,7 @@ class Controller(metaclass=ControllerMeta):
 
     blueprint = None
     decorators = None
-    url_prefix = UrlPrefixDescriptor()
+    url_prefix = None
 
     def render(self, template_name, **ctx):
         if '.' not in template_name:
