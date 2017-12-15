@@ -33,11 +33,14 @@ class ControllerMeta(type):
 
 
 class ResourceMeta(ControllerMeta):
+    extra_base_class_names = ['MethodView']
+
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
         if ABSTRACT_ATTR in clsdict:
-            remove_suffixes = [name] + deep_getattr(bases,
-                                                    REMOVE_SUFFIXES_ATTR)
+            remove_suffixes = ([name]
+                               + ResourceMeta.extra_base_class_names
+                               + deep_getattr(bases, REMOVE_SUFFIXES_ATTR))
             setattr(cls, REMOVE_SUFFIXES_ATTR, remove_suffixes)
         return cls
 

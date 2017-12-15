@@ -15,7 +15,9 @@ LAST_PARAM_NAME_RE = re.compile(r'<(\w+:)?(?P<param_name>\w+)>$')
 def controller_name(cls) -> str:
     name = cls.__name__
     for suffix in getattr(cls, REMOVE_SUFFIXES_ATTR):
-        name = name.replace(suffix, '')
+        if name.endswith(suffix):
+            name = right_replace(name, suffix, '')
+            break
     return snake_case(name)
 
 
@@ -51,6 +53,10 @@ def rename_parent_resource_param_name(parent_resource_cls, url_rule):
     orig_param_name = f'<{type_}{orig_name}>'
     renamed_member_param = f'<{type_}{controller_name(cls)}_{orig_name}>'
     return url_rule.replace(orig_param_name, renamed_member_param, 1)
+
+
+def right_replace(string, old, new, count=1):
+    return new.join(string.rsplit(old, count))
 
 
 # from Flask-RESTful
