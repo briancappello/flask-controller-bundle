@@ -1,3 +1,4 @@
+import functools
 import os
 
 from flask import render_template
@@ -36,22 +37,36 @@ class Controller(metaclass=ControllerMeta):
 
     @classmethod
     def method_as_view(cls, method_name, *class_args, **class_kwargs):
-        def view(*args, **kwargs):
-            self = view.view_class(*class_args, **class_kwargs)
-            return getattr(self, method_name)(*args, **kwargs)
-
-        if cls.decorators:
-            view.__name__ = method_name
-            view.__module__ = cls.__module__
-            for decorator in reversed(cls.decorators):
-                view = decorator(view)
+        # this code, combined with apply_decorators and dispatch_request, is
+        # 95% taken from Flask's View.as_view classmethod (albeit refactored)
+        # differences:
+        # - we pass method_name to dispatch_request, to allow for easier
+        #   customization of behavior by subclasses
+        # - we apply decorators later, so they get called when the view does
+        # - we also apply them in reverse, so that they get applied in the
+        #   logical top-to-bottom order as declared in controllers
+        def view_func(*args, **kwargs):
+            self = view_func.view_class(*class_args, **class_kwargs)
+            return self.dispatch_request(method_name, *args, **kwargs)
 
         cls_fn = getattr(cls, method_name)
-        view.view_class = cls
-        view.__doc__ = getattr(cls_fn, '__doc__', cls.__doc__) or cls.__doc__
-        view.__name__ = method_name
-        view.__module__ = cls.__module__
-        return view
+        view_func.view_class = cls
+        view_func.__doc__ = getattr(cls_fn, '__doc__', cls.__doc__) or cls.__doc__
+        view_func.__name__ = method_name
+        view_func.__module__ = cls.__module__
+        return view_func
+
+    def dispatch_request(self, method_name, *view_args, **view_kwargs):
+        method = self.apply_decorators(getattr(self, method_name))
+        return method(*view_args, **view_kwargs)
+
+    def apply_decorators(self, view_func):
+        if self.decorators:
+            original_view_func = view_func
+            for decorator in reversed(self.decorators):
+                view_func = decorator(view_func)
+            functools.update_wrapper(view_func, original_view_func)
+        return view_func
 
     @classmethod
     def route_rule(cls, route: Route):
