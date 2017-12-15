@@ -22,7 +22,7 @@ def controller(url_prefix_or_controller_cls, controller_cls=None):
 
 
 def func(rule_or_view_func, view_func=None, endpoint=None, defaults=None,
-         methods=None, strict_slashes=None, redirect_to=None, **rule_options):
+         methods=None, **rule_options):
     rule, view_func = _normalize_args(
         rule_or_view_func, view_func, _is_view_func)
 
@@ -37,17 +37,11 @@ def func(rule_or_view_func, view_func=None, endpoint=None, defaults=None,
             route.rule_options['defaults'] = defaults
         if methods is not None:
             route.rule_options['methods'] = methods
-        if strict_slashes is not None:
-            route.rule_options['strict_slashes'] = strict_slashes
-        if redirect_to is not None:
-            route.rule_options['redirect_to'] = redirect_to
         route.rule_options.update(rule_options)
         yield route
     else:
-        yield Route(rule, view_func,
-                    endpoint=endpoint, defaults=defaults,
-                    methods=methods, strict_slashes=strict_slashes,
-                    redirect_to=redirect_to, **rule_options)
+        yield Route(rule, view_func, endpoint=endpoint, defaults=defaults,
+                    methods=methods, **rule_options)
 
 
 def include(module_name):

@@ -3,8 +3,7 @@ from .utils import de_camel, method_name_to_url_slug
 
 class Route:
     def __init__(self, rule, view_func, endpoint=None, is_member=False,
-                 defaults=None, methods=None, strict_slashes=None,
-                 redirect_to=None, **rule_options):
+                 defaults=None, methods=None, **rule_options):
         self._rule = rule
         self.view_func = view_func
         self._endpoint = endpoint
@@ -12,8 +11,6 @@ class Route:
         self.rule_options = rule_options
         self.rule_options['defaults'] = defaults
         self.rule_options['methods'] = methods
-        self.rule_options['strict_slashes'] = strict_slashes
-        self.rule_options['redirect_to'] = redirect_to
         self._controller_name = None
 
     @property
