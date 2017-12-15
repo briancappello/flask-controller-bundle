@@ -3,7 +3,7 @@ import re
 from typing import List, Tuple
 
 # aliases
-from flask_application_factory import de_camel, pluralize, singularize
+from flask_application_factory import kebab_case, pluralize, snake_case
 
 from .attr_constants import REMOVE_SUFFIXES_ATTR
 
@@ -16,7 +16,7 @@ def controller_name(cls) -> str:
     name = cls.__name__
     for suffix in getattr(cls, REMOVE_SUFFIXES_ATTR):
         name = name.replace(suffix, '')
-    return de_camel(name)
+    return snake_case(name)
 
 
 def get_param_tuples(url_rule) -> List[Tuple[str, str]]:
@@ -41,8 +41,8 @@ def join(*args, trailing_slash=False):
     return path if path == '/' else path.rstrip('/')
 
 
-def method_name_to_url_slug(method_name) -> str:
-    return de_camel(method_name).replace('_', '-')
+def method_name_to_url(method_name) -> str:
+    return f"/{kebab_case(method_name)}"
 
 
 def rename_parent_resource_param_name(parent_resource_cls, url_rule):

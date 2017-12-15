@@ -1,4 +1,4 @@
-from .utils import de_camel, method_name_to_url_slug
+from .utils import method_name_to_url, snake_case
 
 
 class Route:
@@ -19,7 +19,7 @@ class Route:
             return self._rule
         elif self._controller_name:
             raise NotImplementedError('use ControllerClass.route_rule(route)')
-        return method_name_to_url_slug(self.method_name)
+        return method_name_to_url(self.method_name)
 
     @rule.setter
     def rule(self, rule):
@@ -30,7 +30,7 @@ class Route:
         if self._endpoint:
             return self._endpoint
         elif self._controller_name:
-            return f'{de_camel(self._controller_name)}.{self.method_name}'
+            return f'{snake_case(self._controller_name)}.{self.method_name}'
         return f'{self.view_func.__module__}.{self.method_name}'
 
     @endpoint.setter

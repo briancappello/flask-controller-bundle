@@ -4,7 +4,7 @@ from flask import render_template
 
 from .metaclasses import ControllerMeta
 from .route import Route
-from .utils import controller_name, de_camel, join, method_name_to_url_slug
+from .utils import controller_name, join, method_name_to_url
 
 
 class TemplateFolderDescriptor:
@@ -57,5 +57,5 @@ class Controller(metaclass=ControllerMeta):
     def route_rule(cls, route: Route):
         rule = route._rule
         if not rule:
-            rule = f"{method_name_to_url_slug(route.method_name)}"
+            rule = f"{method_name_to_url(route.method_name)}"
         return join(cls.url_prefix, rule)
