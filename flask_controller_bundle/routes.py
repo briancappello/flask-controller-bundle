@@ -44,14 +44,24 @@ def func(rule_or_view_func, view_func=None, blueprint=None, defaults=None,
                     endpoint=endpoint, methods=methods, **rule_options)
 
 
-def include(module_name):
+def include(module_name, exclude=None, only=None):
     module = import_module(module_name)
     try:
-        # FIXME should yield a generator
-        return list(getattr(module, 'routes'))
+        routes = _reduce_routes(getattr(module, 'routes'))
     except AttributeError:
         raise AttributeError(f'Could not find a variable named `routes` '
                              f'in the {module_name} module!')
+
+    def should_include_route(route):
+        excluded = exclude and route.endpoint in exclude
+        not_included = only and route.endpoint not in only
+        if excluded or not_included:
+            return False
+        return True
+
+    for route in routes:
+        if should_include_route(route):
+            yield route
 
 
 def prefix(url_prefix: str, children: Iterable):
