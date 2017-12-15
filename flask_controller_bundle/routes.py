@@ -40,6 +40,9 @@ def func(rule_or_view_func, view_func=None, endpoint=None, defaults=None,
         route.rule_options.update(rule_options)
         yield route
     else:
+        if not rule:
+            raise ValueError(f'url rule missing for view function '
+                             f'{view_func.__module__}.{view_func.__name__}')
         yield Route(rule, view_func, endpoint=endpoint, defaults=defaults,
                     methods=methods, **rule_options)
 
