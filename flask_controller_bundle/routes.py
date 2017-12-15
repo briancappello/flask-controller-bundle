@@ -17,7 +17,7 @@ def controller(url_prefix_or_controller_cls, controller_cls=None):
     for route in getattr(controller_cls, ROUTES_ATTR).values():  # type: Route
         yield Route(join(url_prefix, controller_cls.route_rule(route)),
                     controller_cls.method_as_view(route.method_name),
-                    endpoint=controller_cls.route_endpoint(route),
+                    endpoint=route.endpoint,
                     **route.rule_options)
 
 
@@ -77,7 +77,7 @@ def resource(url_prefix_or_resource_cls, resource_cls=None, subresources=None):
     for route in getattr(resource_cls, ROUTES_ATTR).values():  # type: Route
         yield Route(resource_cls.route_rule(route),
                     resource_cls.method_as_view(route.method_name),
-                    endpoint=resource_cls.route_endpoint(route),
+                    endpoint=route.endpoint,
                     **route.rule_options)
 
     for route in _reduce_routes(subresources):

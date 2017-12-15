@@ -59,9 +59,3 @@ class Controller(metaclass=ControllerMeta):
         if not rule:
             rule = f"{method_name_to_url_slug(route.method_name)}"
         return join(cls.url_prefix, rule)
-
-    @classmethod
-    def route_endpoint(cls, route: Route):
-        if route._endpoint:
-            return route._endpoint
-        return f'{de_camel(cls.__name__)}.{route.method_name}'

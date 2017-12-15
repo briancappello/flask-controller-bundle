@@ -1,4 +1,4 @@
-from .utils import method_name_to_url_slug
+from .utils import de_camel, method_name_to_url_slug
 
 
 class Route:
@@ -14,11 +14,14 @@ class Route:
         self.rule_options['methods'] = methods
         self.rule_options['strict_slashes'] = strict_slashes
         self.rule_options['redirect_to'] = redirect_to
+        self._controller_name = None
 
     @property
     def rule(self):
         if self._rule:
             return self._rule
+        elif self._controller_name:
+            raise NotImplementedError('use ControllerClass.route_rule(route)')
         return method_name_to_url_slug(self.method_name)
 
     @rule.setter
@@ -29,6 +32,8 @@ class Route:
     def endpoint(self):
         if self._endpoint:
             return self._endpoint
+        elif self._controller_name:
+            return f'{de_camel(self._controller_name)}.{self.method_name}'
         return f'{self.view_func.__module__}.{self.method_name}'
 
     @endpoint.setter
@@ -45,4 +50,4 @@ class Route:
         return new
 
     def __repr__(self):
-        return f'{self.rule} ({self.endpoint})'
+        return f'<Route endpoint={self.endpoint}>'

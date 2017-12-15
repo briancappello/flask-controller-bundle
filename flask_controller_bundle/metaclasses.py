@@ -23,10 +23,10 @@ class ControllerMeta(type):
             if method_name.startswith('__') or not callable(method):
                 continue
             route = getattr(method, ROUTE_ATTR, None)
-            if route:
-                routes[method_name] = route
-            else:
-                routes[method_name] = Route(None, method)
+            if not route:
+                route = Route(None, method)
+            route._controller_name = name
+            routes[method_name] = route
 
         setattr(cls, ROUTES_ATTR, routes)
         return cls
