@@ -38,13 +38,14 @@ def join(*args, trailing_slash=False):
     """
     dirty_path = '/'.join(map(lambda x: x and x or '', args))
     path = re.sub(r'/+', '/', dirty_path)
-    if trailing_slash:
-        return path.rstrip('/') + '/'
-    return path if path == '/' else path.rstrip('/')
+    if path == '/':
+        return path
+    path = path.rstrip('/')
+    return path if not trailing_slash else path + '/'
 
 
 def method_name_to_url(method_name) -> str:
-    return f"/{kebab_case(method_name)}"
+    return '/' + kebab_case(method_name)
 
 
 def rename_parent_resource_param_name(parent_resource_cls, url_rule):
