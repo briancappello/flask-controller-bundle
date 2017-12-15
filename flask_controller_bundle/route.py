@@ -23,24 +23,6 @@ class Route:
         return self.blueprint.url_prefix
 
     @property
-    def _full_rule(self):
-        if not self.rule:
-            raise Exception(f'{self} is not fully initialized (missing url rule)')
-        return join(self.bp_prefix, self.rule)
-
-    @property
-    def rule(self):
-        if self._rule:
-            return self._rule
-        elif self._controller_name:
-            return None
-        return method_name_to_url(self.method_name)
-
-    @rule.setter
-    def rule(self, rule):
-        self._rule = rule
-
-    @property
     def endpoint(self):
         if self._endpoint:
             return self._endpoint
@@ -55,6 +37,24 @@ class Route:
     @property
     def method_name(self):
         return self.view_func.__name__
+
+    @property
+    def rule(self):
+        if self._rule:
+            return self._rule
+        elif self._controller_name:
+            return None
+        return method_name_to_url(self.method_name)
+
+    @rule.setter
+    def rule(self, rule):
+        self._rule = rule
+
+    @property
+    def full_rule(self):
+        if not self.rule:
+            raise Exception(f'{self} is not fully initialized (missing url rule)')
+        return join(self.bp_prefix, self.rule)
 
     def copy(self):
         new = object.__new__(Route)

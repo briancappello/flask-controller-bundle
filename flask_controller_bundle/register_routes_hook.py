@@ -13,7 +13,7 @@ class RegisterRoutesHook(FactoryHook):
             # FIXME maybe validate routes first? (eg for duplicates?)
             # Flask doesn't complain; it will match the first route found,
             # but maybe we should at least warn the user?
-            app.add_url_rule(route._full_rule,
+            app.add_url_rule(route.full_rule,
                              endpoint=route.endpoint,
                              view_func=route.view_func,
                              **route.rule_options)
