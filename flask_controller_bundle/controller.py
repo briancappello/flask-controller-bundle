@@ -52,15 +52,21 @@ class Controller(metaclass=ControllerMeta):
         return view_func
 
     def dispatch_request(self, method_name, *view_args, **view_kwargs):
-        method = self.apply_decorators(getattr(self, method_name))
+        decorators = self.get_decorators(method_name)
+        method = self.apply_decorators(getattr(self, method_name), decorators)
         return method(*view_args, **view_kwargs)
 
-    def apply_decorators(self, view_func):
-        if self.decorators:
-            original_view_func = view_func
-            for decorator in reversed(self.decorators):
-                view_func = decorator(view_func)
-            functools.update_wrapper(view_func, original_view_func)
+    def get_decorators(self, method_name):
+        return self.decorators or []
+
+    def apply_decorators(self, view_func, decorators):
+        if not decorators:
+            return view_func
+
+        original_view_func = view_func
+        for decorator in reversed(decorators):
+            view_func = decorator(view_func)
+        functools.update_wrapper(view_func, original_view_func)
         return view_func
 
     @classmethod
