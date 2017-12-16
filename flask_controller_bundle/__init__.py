@@ -1,4 +1,4 @@
-from flask_application_factory import Bundle
+from flask_unchained import Bundle
 
 from .controller import Controller
 from .decorators import route
@@ -9,5 +9,4 @@ from .routes import controller, func, include, prefix, resource
 
 
 class FlaskControllerBundle(Bundle):
-    module_name = __name__
     hooks = [RegisterBlueprintsHook, RegisterRoutesHook]

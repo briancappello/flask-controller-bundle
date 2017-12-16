@@ -1,9 +1,9 @@
 from flask import Blueprint, Flask
-from flask_application_factory import Bundle, FactoryHook
+from flask_unchained import Bundle, AppFactoryHook
 from warnings import warn
 
 
-class RegisterBlueprintsHook(FactoryHook):
+class RegisterBlueprintsHook(AppFactoryHook):
     priority = 25
     bundle_module_name = 'views'
 

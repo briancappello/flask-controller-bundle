@@ -1,10 +1,10 @@
 from flask import Flask
-from flask_application_factory import Bundle, FactoryHook
+from flask_unchained import Bundle, AppFactoryHook
 
 from .routes import _reduce_routes
 
 
-class RegisterRoutesHook(FactoryHook):
+class RegisterRoutesHook(AppFactoryHook):
     priority = 25
     bundle_module_name = 'routes'
 

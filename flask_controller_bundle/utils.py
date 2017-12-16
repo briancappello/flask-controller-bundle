@@ -3,7 +3,7 @@ import re
 from typing import List, Tuple
 
 # aliases
-from flask_application_factory import kebab_case, pluralize, snake_case
+from flask_unchained import kebab_case, pluralize, right_replace, snake_case
 
 from .attr_constants import REMOVE_SUFFIXES_ATTR
 
@@ -54,10 +54,6 @@ def rename_parent_resource_param_name(parent_resource_cls, url_rule):
     orig_param_name = f'<{type_}{orig_name}>'
     renamed_member_param = f'<{type_}{controller_name(cls)}_{orig_name}>'
     return url_rule.replace(orig_param_name, renamed_member_param, 1)
-
-
-def right_replace(string, old, new, count=1):
-    return new.join(string.rsplit(old, count))
 
 
 # from Flask-RESTful
