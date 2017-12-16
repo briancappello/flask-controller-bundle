@@ -70,10 +70,9 @@ def deep_getattr(clsdict, bases, name, default=sentinel):
 
 def get_not_views(clsdict, bases):
     not_views = deep_getattr({}, bases, NOT_VIEWS_ATTR, [])
-    return ([n for n, m in clsdict.items()
+    return ({n for n, m in clsdict.items()
              if is_view_func(n, m)
-             and n not in not_views
-             and not getattr(m, ROUTE_ATTR, None)] + not_views)
+             and not getattr(m, ROUTE_ATTR, None)}.union(not_views))
 
 
 def get_remove_suffixes(name, bases, extras):
