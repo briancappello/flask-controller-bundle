@@ -7,8 +7,11 @@ from .constants import CREATE, DELETE, GET, INDEX, PATCH, PUT
 from .route import Route
 
 
+CONTROLLER_REMOVE_EXTRA_SUFFIXES = ['View']
+RESOURCE_REMOVE_EXTRA_SUFFIXES = ['MethodView']
+
+
 class ControllerMeta(type):
-    extra_base_class_names = ['View']
 
     index_method_map = {INDEX: 'GET', CREATE: 'POST'}
     member_method_map = {GET: 'GET', PATCH: 'PATCH',
@@ -19,7 +22,7 @@ class ControllerMeta(type):
         if ABSTRACT_ATTR in clsdict:
             setattr(cls, NOT_VIEWS_ATTR, get_not_views(clsdict, bases))
             setattr(cls, REMOVE_SUFFIXES_ATTR, get_remove_suffixes(
-                name, bases, ControllerMeta.extra_base_class_names))
+                name, bases, CONTROLLER_REMOVE_EXTRA_SUFFIXES))
             return cls
 
         routes = getattr(cls, ROUTES_ATTR, {})
@@ -42,13 +45,11 @@ class ControllerMeta(type):
 
 
 class ResourceMeta(ControllerMeta):
-    extra_base_class_names = ['MethodView']
-
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
         if ABSTRACT_ATTR in clsdict:
             setattr(cls, REMOVE_SUFFIXES_ATTR, get_remove_suffixes(
-                name, bases, ResourceMeta.extra_base_class_names))
+                name, bases, RESOURCE_REMOVE_EXTRA_SUFFIXES))
         return cls
 
 
