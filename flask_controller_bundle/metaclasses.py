@@ -15,8 +15,8 @@ class ControllerMeta(type):
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
         if ABSTRACT_ATTR in clsdict:
-            remove_suffixes = [name] + ControllerMeta.extra_base_class_names
-            setattr(cls, REMOVE_SUFFIXES_ATTR, remove_suffixes)
+            setattr(cls, REMOVE_SUFFIXES_ATTR, get_remove_suffixes(
+                name, bases, ControllerMeta.extra_base_class_names))
             return cls
 
         routes = getattr(cls, ROUTES_ATTR, {})
@@ -42,10 +42,8 @@ class ResourceMeta(ControllerMeta):
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
         if ABSTRACT_ATTR in clsdict:
-            remove_suffixes = ([name]
-                               + ResourceMeta.extra_base_class_names
-                               + deep_getattr(bases, REMOVE_SUFFIXES_ATTR))
-            setattr(cls, REMOVE_SUFFIXES_ATTR, remove_suffixes)
+            setattr(cls, REMOVE_SUFFIXES_ATTR, get_remove_suffixes(
+                name, bases, ResourceMeta.extra_base_class_names))
         return cls
 
 
@@ -60,6 +58,13 @@ def deep_getattr(bases, name, default=sentinel):
     if default != sentinel:
         return default
     raise AttributeError(name)
+
+
+def get_remove_suffixes(name, bases, extras):
+    existing_suffixes = deep_getattr({}, bases, REMOVE_SUFFIXES_ATTR, [])
+    new_suffixes = [name] + extras
+    return ([x for x in new_suffixes if x not in existing_suffixes]
+            + existing_suffixes)
 
 
 def is_view_func(method_name, method):
