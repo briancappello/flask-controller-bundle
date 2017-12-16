@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_unchained import Bundle, AppFactoryHook
+from flask_unchained import AppFactoryHook, Bundle
 
 from .routes import _reduce_routes
 

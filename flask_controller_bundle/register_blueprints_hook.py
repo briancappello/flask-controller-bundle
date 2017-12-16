@@ -1,5 +1,5 @@
 from flask import Blueprint, Flask
-from flask_unchained import Bundle, AppFactoryHook
+from flask_unchained import AppFactoryHook, Bundle
 from warnings import warn
 
 
