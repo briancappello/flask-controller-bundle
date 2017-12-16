@@ -1,4 +1,5 @@
 ABSTRACT_ATTR = '__abstract__'
+NOT_VIEWS_ATTR = '__fcb_non_view_method_names__'
 REMOVE_SUFFIXES_ATTR = '__fcb_remove_suffixes__'
 ROUTE_ATTR = '__fcb_route__'
 ROUTES_ATTR = '__fcb_routes__'

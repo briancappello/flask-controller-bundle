@@ -2,6 +2,7 @@ from types import FunctionType
 
 from .attr_constants import (
     ABSTRACT_ATTR,
+    NOT_VIEWS_ATTR,
     REMOVE_SUFFIXES_ATTR,
     ROUTE_ATTR,
     ROUTES_ATTR,
@@ -15,15 +16,19 @@ class ControllerMeta(type):
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
         if ABSTRACT_ATTR in clsdict:
+            setattr(cls, NOT_VIEWS_ATTR, get_not_views(clsdict, bases))
             setattr(cls, REMOVE_SUFFIXES_ATTR, get_remove_suffixes(
                 name, bases, ControllerMeta.extra_base_class_names))
             return cls
 
         routes = getattr(cls, ROUTES_ATTR, {})
+        not_views = deep_getattr({}, bases, NOT_VIEWS_ATTR)
 
         for method_name, method in clsdict.items():
-            if not is_view_func(method_name, method):
+            if (method_name in not_views
+                    or not is_view_func(method_name, method)):
                 continue
+
             route = getattr(method, ROUTE_ATTR, None)
             if not route:
                 route = Route(None, method)
@@ -60,6 +65,14 @@ def deep_getattr(clsdict, bases, name, default=sentinel):
     if default != sentinel:
         return default
     raise AttributeError(name)
+
+
+def get_not_views(clsdict, bases):
+    not_views = deep_getattr({}, bases, NOT_VIEWS_ATTR, [])
+    return ([n for n, m in clsdict.items()
+             if is_view_func(n, m)
+             and n not in not_views
+             and not getattr(m, ROUTE_ATTR, None)] + not_views)
 
 
 def get_remove_suffixes(name, bases, extras):
