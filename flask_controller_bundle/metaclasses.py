@@ -5,6 +5,7 @@ from .attr_constants import (
     ROUTE_ATTR, ROUTES_ATTR)
 from .constants import CREATE, DELETE, GET, INDEX, PATCH, PUT
 from .route import Route
+from .utils import controller_name, join, get_param_tuples, method_name_to_url
 
 
 CONTROLLER_REMOVE_EXTRA_SUFFIXES = ['View']
@@ -42,6 +43,12 @@ class ControllerMeta(type):
         setattr(cls, ROUTES_ATTR, routes)
         return cls
 
+    def route_rule(cls, route: Route):
+        rule = route.rule
+        if not rule:
+            rule = method_name_to_url(route.method_name)
+        return join(cls.url_prefix, rule)
+
 
 class ResourceMeta(ControllerMeta):
     def __new__(mcs, name, bases, clsdict):
@@ -50,6 +57,21 @@ class ResourceMeta(ControllerMeta):
             setattr(cls, REMOVE_SUFFIXES_ATTR, get_remove_suffixes(
                 name, bases, RESOURCE_REMOVE_EXTRA_SUFFIXES))
         return cls
+
+    def route_rule(cls, route: Route):
+        rule = route.rule
+        if not rule:
+            found, _, is_member = cls.lookup_resource_method(route.method_name)
+            rule = (found and (is_member and cls.member_param or '/')
+                          or method_name_to_url(route.method_name))
+        if route.is_member:
+            rule = rename_parent_resource_param_name(
+                cls, join(cls.member_param, rule))
+        return join(cls.url_prefix, rule)
+
+    def subresource_route_rule(cls, subresource_route: Route):
+        rule = join(cls.url_prefix, cls.member_param, subresource_route.rule)
+        return rename_parent_resource_param_name(cls, rule)
 
 
 sentinel = object()
@@ -86,3 +108,11 @@ def is_view_func(method_name, method):
     is_function = isinstance(method, FunctionType)
     is_private = method_name.startswith('_')
     return is_function and not is_private
+
+
+def rename_parent_resource_param_name(parent_resource_cls, url_rule):
+    cls = parent_resource_cls
+    type_, orig_name = get_param_tuples(cls.member_param)[0]
+    orig_param_name = f'<{type_}{orig_name}>'
+    renamed_member_param = f'<{type_}{controller_name(cls)}_{orig_name}>'
+    return url_rule.replace(orig_param_name, renamed_member_param, 1)

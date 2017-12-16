@@ -4,8 +4,7 @@ import os
 from flask import render_template
 
 from .metaclasses import ControllerMeta
-from .route import Route
-from .utils import controller_name, join, method_name_to_url
+from .utils import controller_name
 
 
 class TemplateFolderDescriptor:
@@ -68,10 +67,3 @@ class Controller(metaclass=ControllerMeta):
             view_func = decorator(view_func)
         functools.update_wrapper(view_func, original_view_func)
         return view_func
-
-    @classmethod
-    def route_rule(cls, route: Route):
-        rule = route.rule
-        if not rule:
-            rule = method_name_to_url(route.method_name)
-        return join(cls.url_prefix, rule)
