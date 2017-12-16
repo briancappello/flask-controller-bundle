@@ -1,4 +1,3 @@
-from .constants import CREATE, DELETE, GET, INDEX, PATCH, PUT
 from .controller import Controller
 from .metaclasses import ResourceMeta
 from .route import Route
@@ -16,18 +15,6 @@ class Resource(Controller, metaclass=ResourceMeta):
 
     url_prefix = ResourceUrlPrefixDescriptor()
     member_param = '<int:id>'
-
-    index_method_map = {
-        INDEX: 'GET',
-        CREATE: 'POST',
-    }
-
-    member_method_map = {
-        GET: 'GET',
-        PUT: 'PUT',
-        PATCH: 'PATCH',
-        DELETE: 'DELETE',
-    }
 
     @classmethod
     def method_as_view(cls, method_name, *class_args, **class_kwargs):

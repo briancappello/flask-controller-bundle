@@ -1,17 +1,18 @@
 from types import FunctionType
 
 from .attr_constants import (
-    ABSTRACT_ATTR,
-    NOT_VIEWS_ATTR,
-    REMOVE_SUFFIXES_ATTR,
-    ROUTE_ATTR,
-    ROUTES_ATTR,
-)
+    ABSTRACT_ATTR, NOT_VIEWS_ATTR, REMOVE_SUFFIXES_ATTR,
+    ROUTE_ATTR, ROUTES_ATTR)
+from .constants import CREATE, DELETE, GET, INDEX, PATCH, PUT
 from .route import Route
 
 
 class ControllerMeta(type):
     extra_base_class_names = ['View']
+
+    index_method_map = {INDEX: 'GET', CREATE: 'POST'}
+    member_method_map = {GET: 'GET', PATCH: 'PATCH',
+                         PUT: 'PUT', DELETE: 'DELETE'}
 
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
