@@ -27,8 +27,7 @@ class ControllerMeta(type):
             route = getattr(method, ROUTE_ATTR, None)
             if not route:
                 route = Route(None, method)
-            route.blueprint = clsdict.get('blueprint',
-                                          deep_getattr(bases, 'blueprint'))
+            route.blueprint = deep_getattr(clsdict, bases, 'blueprint')
             route._controller_name = name
             routes[method_name] = route
 
@@ -50,7 +49,10 @@ class ResourceMeta(ControllerMeta):
 sentinel = object()
 
 
-def deep_getattr(bases, name, default=sentinel):
+def deep_getattr(clsdict, bases, name, default=sentinel):
+    value = clsdict.get(name, sentinel)
+    if value != sentinel:
+        return value
     for base in bases:
         value = getattr(base, name, sentinel)
         if value != sentinel:
