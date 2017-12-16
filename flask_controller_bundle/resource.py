@@ -19,15 +19,10 @@ class Resource(Controller, metaclass=ResourceMeta):
     @classmethod
     def method_as_view(cls, method_name, *class_args, **class_kwargs):
         view = super().method_as_view(method_name, *class_args, **class_kwargs)
-        methods = None
         if method_name in cls.index_method_map:
-            methods = cls.index_method_map[method_name]
+            view.methods = cls.index_method_map[method_name]
         elif method_name in cls.member_method_map:
-            methods = cls.member_method_map[method_name]
-        if methods:
-            if not isinstance(methods, list):
-                methods = [methods]
-            view.methods = methods
+            view.methods = cls.member_method_map[method_name]
         return view
 
     @classmethod

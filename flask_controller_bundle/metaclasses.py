@@ -12,10 +12,9 @@ RESOURCE_REMOVE_EXTRA_SUFFIXES = ['MethodView']
 
 
 class ControllerMeta(type):
-
-    index_method_map = {INDEX: 'GET', CREATE: 'POST'}
-    member_method_map = {GET: 'GET', PATCH: 'PATCH',
-                         PUT: 'PUT', DELETE: 'DELETE'}
+    index_method_map = {INDEX: ['GET'], CREATE: ['POST']}
+    member_method_map = {GET: ['GET'], PATCH: ['PATCH'],
+                         PUT: ['PUT'], DELETE: ['DELETE']}
 
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
