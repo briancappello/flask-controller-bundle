@@ -11,6 +11,8 @@ class Route:
         self.is_member = is_member
         self.rule_options = rule_options
         self.rule_options['defaults'] = defaults
+        if methods and not isinstance(methods, list):
+            methods = [methods]
         self.rule_options['methods'] = methods
 
         # extra private (should only be used by controller metaclasses)

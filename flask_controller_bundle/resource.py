@@ -1,3 +1,4 @@
+from .constants import CREATE, DELETE, GET, INDEX, PATCH, PUT
 from .controller import Controller
 from .metaclasses import ResourceMeta
 from .route import Route
@@ -17,24 +18,29 @@ class Resource(Controller, metaclass=ResourceMeta):
     member_param = '<int:id>'
 
     index_method_map = {
-        'index': ['GET', 'HEAD'],
-        'create': ['POST'],
+        INDEX: 'GET',
+        CREATE: 'POST',
     }
 
     member_method_map = {
-        'get': ['GET', 'HEAD'],
-        'put': ['PUT'],
-        'patch': ['PATCH'],
-        'delete': ['DELETE'],
+        GET: 'GET',
+        PUT: 'PUT',
+        PATCH: 'PATCH',
+        DELETE: 'DELETE',
     }
 
     @classmethod
     def method_as_view(cls, method_name, *class_args, **class_kwargs):
         view = super().method_as_view(method_name, *class_args, **class_kwargs)
+        methods = None
         if method_name in cls.index_method_map:
-            view.methods = cls.index_method_map[method_name]
+            methods = cls.index_method_map[method_name]
         elif method_name in cls.member_method_map:
-            view.methods = cls.member_method_map[method_name]
+            methods = cls.member_method_map[method_name]
+        if methods:
+            if not isinstance(methods, list):
+                methods = [methods]
+            view.methods = methods
         return view
 
     @classmethod
