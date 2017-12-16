@@ -54,26 +54,3 @@ def rename_parent_resource_param_name(parent_resource_cls, url_rule):
     orig_param_name = f'<{type_}{orig_name}>'
     renamed_member_param = f'<{type_}{controller_name(cls)}_{orig_name}>'
     return url_rule.replace(orig_param_name, renamed_member_param, 1)
-
-
-# from Flask-RESTful
-def unpack(value):
-    """
-    Return a three tuple of data, code, and headers
-    """
-    if not isinstance(value, tuple):
-        return value, 200, {}
-
-    try:
-        data, code, headers = value
-        return data, code, headers
-    except ValueError:
-        pass
-
-    try:
-        data, code = value
-        return data, code, {}
-    except ValueError:
-        pass
-
-    return value, 200, {}
