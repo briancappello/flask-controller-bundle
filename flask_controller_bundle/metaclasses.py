@@ -1,3 +1,5 @@
+from types import FunctionType
+
 from .attr_constants import (
     ABSTRACT_ATTR,
     REMOVE_SUFFIXES_ATTR,
@@ -20,7 +22,7 @@ class ControllerMeta(type):
         routes = getattr(cls, ROUTES_ATTR, {})
 
         for method_name, method in clsdict.items():
-            if method_name.startswith('__') or not callable(method):
+            if not is_view_func(method_name, method):
                 continue
             route = getattr(method, ROUTE_ATTR, None)
             if not route:
@@ -58,3 +60,9 @@ def deep_getattr(bases, name, default=sentinel):
     if default != sentinel:
         return default
     raise AttributeError(name)
+
+
+def is_view_func(method_name, method):
+    is_function = isinstance(method, FunctionType)
+    is_private = method_name.startswith('_')
+    return is_function and not is_private
