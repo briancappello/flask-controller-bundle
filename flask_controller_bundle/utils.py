@@ -22,7 +22,7 @@ def controller_name(cls) -> str:
 
 
 def get_param_tuples(url_rule) -> List[Tuple[str, str]]:
-    return re.findall(PARAM_NAME_RE, url_rule)
+    return [(t[:-1], n) for t, n in re.findall(PARAM_NAME_RE, url_rule)]
 
 
 def get_last_param_name(url_rule) -> str:
