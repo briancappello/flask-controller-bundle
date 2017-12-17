@@ -110,9 +110,8 @@ def is_view_func(method_name, method):
     return is_function and not is_private
 
 
-def rename_parent_resource_param_name(parent_resource_cls, url_rule):
-    cls = parent_resource_cls
-    type_, orig_name = get_param_tuples(cls.member_param)[0]
-    orig_param_name = f'<{type_}{orig_name}>'
-    renamed_member_param = f'<{type_}{controller_name(cls)}_{orig_name}>'
-    return url_rule.replace(orig_param_name, renamed_member_param, 1)
+def rename_parent_resource_param_name(parent_cls, url_rule):
+    type_, orig_name = get_param_tuples(parent_cls.member_param)[0]
+    orig_param = f'<{type_}:{orig_name}>'
+    renamed_param = f'<{type_}:{controller_name(parent_cls)}_{orig_name}>'
+    return url_rule.replace(orig_param, renamed_param, 1)
