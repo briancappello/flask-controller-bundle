@@ -42,12 +42,8 @@ class Controller(metaclass=ControllerMeta):
         def view_func(*args, **kwargs):
             self = view_func.view_class(*class_args, **class_kwargs)
             return self.dispatch_request(method_name, *args, **kwargs)
-
-        cls_fn = getattr(cls, method_name)
+        functools.update_wrapper(view_func, getattr(cls, method_name))
         view_func.view_class = cls
-        view_func.__doc__ = getattr(cls_fn, '__doc__', cls.__doc__) or cls.__doc__
-        view_func.__name__ = method_name
-        view_func.__module__ = cls.__module__
         return view_func
 
     def dispatch_request(self, method_name, *view_args, **view_kwargs):
