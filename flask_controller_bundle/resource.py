@@ -3,7 +3,7 @@ from .metaclasses import ResourceMeta
 from .utils import controller_name, pluralize
 
 
-class ResourceUrlPrefixDescriptor:
+class UrlPrefixDescriptor:
     def __get__(self, instance, cls):
         return '/' + pluralize(controller_name(cls))
 
@@ -11,7 +11,7 @@ class ResourceUrlPrefixDescriptor:
 class Resource(Controller, metaclass=ResourceMeta):
     __abstract__ = True
 
-    url_prefix = ResourceUrlPrefixDescriptor()
+    url_prefix = UrlPrefixDescriptor()
     member_param = '<int:id>'
 
     @classmethod
