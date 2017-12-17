@@ -7,7 +7,9 @@ from .register_blueprints_hook import RegisterBlueprintsHook
 from .register_routes_hook import RegisterRoutesHook
 from .resource import Resource
 from .routes import controller, func, include, prefix, resource
+from .controller_bundle_store import ControllerBundleStore
 
 
 class FlaskControllerBundle(Bundle):
     hooks = [RegisterBlueprintsHook, RegisterRoutesHook]
+    store = ControllerBundleStore()

@@ -5,7 +5,7 @@ from .routes import _reduce_routes
 
 
 class RegisterRoutesHook(AppFactoryHook):
-    priority = 25
+    priority = 30
     bundle_module_name = 'routes'
 
     def process_objects(self, app: Flask, app_config_cls, objects):
@@ -13,6 +13,7 @@ class RegisterRoutesHook(AppFactoryHook):
             # FIXME maybe validate routes first? (eg for duplicates?)
             # Flask doesn't complain; it will match the first route found,
             # but maybe we should at least warn the user?
+            self.store.endpoints[route.endpoint] = route
             app.add_url_rule(route.full_rule,
                              endpoint=route.endpoint,
                              view_func=route.view_func,
