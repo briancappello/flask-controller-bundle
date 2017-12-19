@@ -1,7 +1,7 @@
 import functools
 import os
 
-from flask import current_app as app, redirect, render_template, request
+from flask import redirect, render_template, request
 
 from .metaclasses import ControllerMeta
 from .utils import controller_name, get_url, validate_redirect_url
