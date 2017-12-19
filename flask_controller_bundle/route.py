@@ -41,10 +41,14 @@ class Route:
 
     @property
     def endpoint(self):
+        blueprint_name = self.blueprint and self.blueprint.name or ''
         if self._endpoint:
             return self._endpoint
         elif self._controller_name:
-            return f'{snake_case(self._controller_name)}.{self.method_name}'
+            suffix = f'{snake_case(self._controller_name)}.{self.method_name}'
+            return blueprint_name and f'{blueprint_name}.{suffix}' or suffix
+        elif blueprint_name:
+            return f'{blueprint_name}.{self.method_name}'
         return f'{self.view_func.__module__}.{self.method_name}'
 
     @endpoint.setter
