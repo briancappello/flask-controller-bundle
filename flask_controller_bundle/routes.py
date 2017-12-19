@@ -1,6 +1,7 @@
+import importlib
 import inspect
+import sys
 
-from importlib import import_module
 from typing import Iterable
 
 from .attr_constants import ROUTE_ATTR, ROUTES_ATTR
@@ -44,8 +45,15 @@ def func(rule_or_view_func, view_func=None, blueprint=None, defaults=None,
                     endpoint=endpoint, methods=methods, **rule_options)
 
 
-def include(module_name, exclude=None, only=None):
-    module = import_module(module_name)
+def include(module_name, attr_name='routes', exclude=None, only=None):
+    # because routes are generators, once they've been "drained", they can't be
+    # used again. under normal end-user-app circumstances this reload probably
+    # wouldn't be needed, but it's at least required for the tests to pass
+    reload_needed = module_name in sys.modules
+    module = importlib.import_module(module_name)
+    if reload_needed:
+        importlib.reload(module)
+
     try:
         routes = reduce_routes(getattr(module, attr_name))
     except AttributeError:
