@@ -1,10 +1,10 @@
 import functools
 import os
 
-from flask import render_template
+from flask import current_app as app, redirect, render_template, request
 
 from .metaclasses import ControllerMeta
-from .utils import controller_name
+from .utils import controller_name, get_url, validate_redirect_url
 
 
 class TemplateFolderDescriptor:
@@ -21,6 +21,22 @@ class Controller(metaclass=ControllerMeta):
     blueprint = None
     decorators = None
     url_prefix = None
+
+    # modified from flask_security.utils.get_post_action_redirect
+    def redirect(self, where=None, override=None, **url_kwargs):
+        urls = [get_url(request.args.get('next')),
+                get_url(request.form.get('next'))]
+
+        if where:
+            urls.append(get_url(where, _cls=self, **url_kwargs))
+
+        if override:
+            urls.insert(0, get_url(override, _cls=self, **url_kwargs))
+
+        for url in urls:
+            if validate_redirect_url(url):
+                return redirect(url)
+        return redirect('/')
 
     def render(self, template_name, **ctx):
         if '.' not in template_name:
