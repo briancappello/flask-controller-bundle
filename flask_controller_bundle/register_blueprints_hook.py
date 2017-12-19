@@ -8,7 +8,7 @@ class RegisterBlueprintsHook(AppFactoryHook):
     bundle_module_name = 'views'
 
     def process_objects(self, app: Flask, app_config_cls, objects):
-        for blueprint in objects:
+        for blueprint in reversed(objects):
             # rstrip '/' off url_prefix because views should be declaring their
             # routes beginning with '/', and if url_prefix ends with '/', routes
             # will end up looking like '/prefix//endpoint', which is no good
@@ -31,7 +31,7 @@ class RegisterBlueprintsHook(AppFactoryHook):
                      f'`blueprint_names` class attribute.')
                 continue
             blueprints.append(blueprint)
-        return blueprints
+        return reversed(blueprints)
 
     def type_check(self, obj):
         return isinstance(obj, Blueprint)
