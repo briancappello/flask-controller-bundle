@@ -47,7 +47,7 @@ def func(rule_or_view_func, view_func=None, blueprint=None, defaults=None,
 def include(module_name, exclude=None, only=None):
     module = import_module(module_name)
     try:
-        routes = _reduce_routes(getattr(module, 'routes'))
+        routes = reduce_routes(getattr(module, attr_name))
     except AttributeError:
         raise AttributeError(f'Could not find a variable named `routes` '
                              f'in the {module_name} module!')
@@ -65,7 +65,7 @@ def include(module_name, exclude=None, only=None):
 
 
 def prefix(url_prefix: str, children: Iterable):
-    for route in _reduce_routes(children):
+    for route in reduce_routes(children):
         route = route.copy()
         route.rule = join(url_prefix, route.rule)
         yield route
@@ -85,13 +85,24 @@ def resource(url_prefix_or_resource_cls, resource_cls=None, subresources=None):
         route.view_func = resource_cls.method_as_view(route.method_name)
         yield route
 
-    for route in _reduce_routes(subresources):  # type: Route
+    for route in reduce_routes(subresources):  # type: Route
         route = route.copy()
         route.blueprint = resource_cls.blueprint
         route.rule = resource_cls.subresource_route_rule(route)
         yield route
 
     resource_cls.url_prefix = resource_url_prefix
+
+
+def reduce_routes(routes):
+    if not routes:
+        raise StopIteration
+
+    for route in routes:
+        if isinstance(route, Route):
+            yield route
+        else:
+            yield from reduce_routes(route)
 
 
 def _is_controller_cls(controller_cls, has_rule):
@@ -146,14 +157,3 @@ def _normalize_args(maybe_str, maybe_none, test):
     except ValueError as e:
         raise ValueError(f'{str(e)} (got {maybe_str}, {maybe_none})')
     raise NotImplementedError
-
-
-def _reduce_routes(routes):
-    if not routes:
-        raise StopIteration
-
-    for route in routes:
-        if isinstance(route, Route):
-            yield route
-        else:
-            yield from _reduce_routes(route)

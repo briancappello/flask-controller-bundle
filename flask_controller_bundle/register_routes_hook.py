@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_unchained import AppFactoryHook, Bundle
 
-from .routes import _reduce_routes
+from .routes import reduce_routes
 
 
 class RegisterRoutesHook(AppFactoryHook):
@@ -9,7 +9,7 @@ class RegisterRoutesHook(AppFactoryHook):
     bundle_module_name = 'routes'
 
     def process_objects(self, app: Flask, app_config_cls, objects):
-        for route in _reduce_routes(objects):
+        for route in reduce_routes(objects):
             # FIXME maybe validate routes first? (eg for duplicates?)
             # Flask doesn't complain; it will match the first route found,
             # but maybe we should at least warn the user?
