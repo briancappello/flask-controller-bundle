@@ -13,11 +13,12 @@ class RegisterRoutesHook(AppFactoryHook):
             # FIXME maybe validate routes first? (eg for duplicates?)
             # Flask doesn't complain; it will match the first route found,
             # but maybe we should at least warn the user?
-            self.store.endpoints[route.endpoint] = route
-            app.add_url_rule(route.full_rule,
-                             endpoint=route.endpoint,
-                             view_func=route.view_func,
-                             **route.rule_options)
+            if route.should_register(app):
+                self.store.endpoints[route.endpoint] = route
+                app.add_url_rule(route.full_rule,
+                                 endpoint=route.endpoint,
+                                 view_func=route.view_func,
+                                 **route.rule_options)
 
     def collect_from_bundle(self, bundle: Bundle):
         if not bundle.app_bundle:

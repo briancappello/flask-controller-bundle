@@ -3,7 +3,8 @@ from .utils import join, method_name_to_url, snake_case
 
 class Route:
     def __init__(self, rule, view_func, blueprint=None, defaults=None,
-                 endpoint=None, is_member=False, methods=None, **rule_options):
+                 endpoint=None, is_member=False, methods=None, only_if=None,
+                 **rule_options):
         self._rule = rule
         self.rule_options = rule_options
         self.view_func = view_func
@@ -12,9 +13,17 @@ class Route:
         self._endpoint = endpoint
         self.is_member = is_member
         self.methods = methods
+        self.only_if = only_if
 
         # extra private (should only be used by controller metaclasses)
         self._controller_name = None
+
+    def should_register(self, app):
+        if self.only_if is None:
+            return True
+        elif callable(self.only_if):
+            return self.only_if(app)
+        return bool(self.only_if)
 
     @property
     def bp_prefix(self):
