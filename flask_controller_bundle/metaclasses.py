@@ -1,8 +1,7 @@
 from types import FunctionType
 
-from .attr_constants import (
-    ABSTRACT_ATTR, NOT_VIEWS_ATTR, REMOVE_SUFFIXES_ATTR,
-    ROUTE_ATTR, ROUTES_ATTR)
+from .attr_constants import (ABSTRACT_ATTR, NO_ROUTE_ATTR, NO_ROUTES_ATTR,
+                             REMOVE_SUFFIXES_ATTR, ROUTE_ATTR, ROUTES_ATTR)
 from .constants import CREATE, DELETE, GET, INDEX, PATCH, PUT
 from .route import Route
 from .utils import controller_name, join, get_param_tuples, method_name_to_url
@@ -20,14 +19,13 @@ class ControllerMeta(type):
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
         if ABSTRACT_ATTR in clsdict:
-            setattr(cls, NOT_VIEWS_ATTR, get_not_views(clsdict, bases))
+            setattr(cls, NO_ROUTES_ATTR, get_not_views(clsdict, bases))
             setattr(cls, REMOVE_SUFFIXES_ATTR, get_remove_suffixes(
                 name, bases, CONTROLLER_REMOVE_EXTRA_SUFFIXES))
             return cls
 
         routes = getattr(cls, ROUTES_ATTR, {})
-        not_views = deep_getattr({}, bases, NOT_VIEWS_ATTR)
-
+        not_views = deep_getattr({}, bases, NO_ROUTES_ATTR)
         for method_name, method in clsdict.items():
             if (method_name in not_views
                     or not is_view_func(method_name, method)):
@@ -91,7 +89,7 @@ def deep_getattr(clsdict, bases, name, default=sentinel):
 
 
 def get_not_views(clsdict, bases):
-    not_views = deep_getattr({}, bases, NOT_VIEWS_ATTR, [])
+    not_views = deep_getattr({}, bases, NO_ROUTES_ATTR, [])
     return ({n for n, m in clsdict.items()
              if is_view_func(n, m)
              and not getattr(m, ROUTE_ATTR, None)}.union(not_views))
@@ -107,7 +105,8 @@ def get_remove_suffixes(name, bases, extras):
 def is_view_func(method_name, method):
     is_function = isinstance(method, FunctionType)
     is_private = method_name.startswith('_')
-    return is_function and not is_private
+    is_no_route = getattr(method, NO_ROUTE_ATTR, False)
+    return is_function and not (is_private or is_no_route)
 
 
 def rename_parent_resource_param_name(parent_cls, url_rule):

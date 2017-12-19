@@ -1,4 +1,4 @@
-from .attr_constants import ROUTE_ATTR
+from .attr_constants import NO_ROUTE_ATTR, ROUTE_ATTR
 from .route import Route
 
 
@@ -15,4 +15,14 @@ def route(rule=None, blueprint=None, defaults=None, endpoint=None,
         fn = rule
         rule = None
         return wrapper(fn)
+    return wrapper
+
+
+def no_route(arg=None):
+    def wrapper(fn):
+        setattr(fn, NO_ROUTE_ATTR, True)
+        return fn
+
+    if callable(arg):
+        return wrapper(arg)
     return wrapper
