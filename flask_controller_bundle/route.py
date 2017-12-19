@@ -5,13 +5,13 @@ class Route:
     def __init__(self, rule, view_func, blueprint=None, defaults=None,
                  endpoint=None, is_member=False, methods=None, **rule_options):
         self._rule = rule
+        self.rule_options = rule_options
         self.view_func = view_func
         self.blueprint = blueprint
+        self.defaults = defaults
         self._endpoint = endpoint
         self.is_member = is_member
-        self.rule_options = rule_options
-        self.rule_options['defaults'] = defaults
-        self.rule_options['methods'] = methods
+        self.methods = methods
 
         # extra private (should only be used by controller metaclasses)
         self._controller_name = None
@@ -21,6 +21,14 @@ class Route:
         if not self.blueprint:
             return None
         return self.blueprint.url_prefix
+
+    @property
+    def defaults(self):
+        return self.rule_options['defaults']
+
+    @defaults.setter
+    def defaults(self, defaults):
+        self.rule_options['defaults'] = defaults
 
     @property
     def endpoint(self):
@@ -37,6 +45,15 @@ class Route:
     @property
     def method_name(self):
         return self.view_func.__name__
+
+    @property
+    def methods(self):
+        return getattr(self.view_func, 'methods',
+                       self.rule_options.get('methods')) or ['GET']
+
+    @methods.setter
+    def methods(self, methods):
+        self.rule_options['methods'] = methods
 
     @property
     def rule(self):

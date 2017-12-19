@@ -34,9 +34,9 @@ def func(rule_or_view_func, view_func=None, blueprint=None, defaults=None,
         if endpoint is not None:
             route.endpoint = endpoint
         if defaults is not None:
-            route.rule_options['defaults'] = defaults
+            route.defaults = defaults
         if methods is not None:
-            route.rule_options['methods'] = methods
+            route.methods = methods
         route.rule_options.update(rule_options)
         yield route
     else:
