@@ -73,7 +73,7 @@ class ResourceMeta(ControllerMeta):
             else:
                 route = Route(rule, getattr(cls, method_name))
                 route.blueprint = deep_getattr(clsdict, bases, 'blueprint')
-                route._controller = cls
+                route._controller_name = name
             routes[method_name] = route
         setattr(cls, ROUTES_ATTR, routes)
 
