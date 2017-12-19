@@ -25,7 +25,7 @@ class Controller(metaclass=ControllerMeta):
     def render(self, template_name, **ctx):
         if '.' not in template_name:
             template_name = f'{template_name}{self.template_extension}'
-        if self.template_folder:
+        if self.template_folder and os.sep not in template_name:
             template_name = os.path.join(self.template_folder, template_name)
         return render_template(template_name, **ctx)
 
