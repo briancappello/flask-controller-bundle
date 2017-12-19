@@ -2,7 +2,8 @@ from types import FunctionType
 
 from .attr_constants import (ABSTRACT_ATTR, NO_ROUTE_ATTR, NO_ROUTES_ATTR,
                              REMOVE_SUFFIXES_ATTR, ROUTE_ATTR, ROUTES_ATTR)
-from .constants import CREATE, DELETE, GET, INDEX, PATCH, PUT
+from .constants import (ALL_METHODS, INDEX_METHODS, MEMBER_METHODS,
+                        CREATE, DELETE, GET, INDEX, PATCH, PUT)
 from .route import Route
 from .utils import controller_name, join, get_param_tuples, method_name_to_url
 
@@ -12,10 +13,6 @@ RESOURCE_REMOVE_EXTRA_SUFFIXES = ['MethodView']
 
 
 class ControllerMeta(type):
-    index_method_map = {INDEX: ['GET'], CREATE: ['POST']}
-    member_method_map = {GET: ['GET'], PATCH: ['PATCH'],
-                         PUT: ['PUT'], DELETE: ['DELETE']}
-
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
         if ABSTRACT_ATTR in clsdict:
@@ -49,19 +46,48 @@ class ControllerMeta(type):
 
 
 class ResourceMeta(ControllerMeta):
+    resource_methods = {INDEX: ['GET'], CREATE: ['POST'],
+                        GET: ['GET'], PATCH: ['PATCH'],
+                        PUT: ['PUT'], DELETE: ['DELETE']}
+
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
         if ABSTRACT_ATTR in clsdict:
             setattr(cls, REMOVE_SUFFIXES_ATTR, get_remove_suffixes(
                 name, bases, RESOURCE_REMOVE_EXTRA_SUFFIXES))
+            return cls
+
+        routes = getattr(cls, ROUTES_ATTR, {})
+        for method_name in ALL_METHODS:
+            if not getattr(cls, method_name, None):
+                continue
+
+            if method_name in INDEX_METHODS:
+                rule = '/'
+            else:
+                rule = deep_getattr(clsdict, bases, 'member_param')
+
+            route = routes.get(method_name)
+            if route:
+                route.rule = rule
+            else:
+                route = Route(rule, getattr(cls, method_name))
+                route.blueprint = deep_getattr(clsdict, bases, 'blueprint')
+                route._controller = cls
+            routes[method_name] = route
+        setattr(cls, ROUTES_ATTR, routes)
+
         return cls
 
     def route_rule(cls, route: Route):
         rule = route.rule
         if not rule:
-            found, _, is_member = cls.lookup_resource_method(route.method_name)
-            rule = (found and (is_member and cls.member_param or '/')
-                          or method_name_to_url(route.method_name))
+            if route.method_name in INDEX_METHODS:
+                rule = '/'
+            elif route.method_name in MEMBER_METHODS:
+                rule = cls.member_param
+            else:
+                rule = method_name_to_url(route.method_name)
         if route.is_member:
             rule = rename_parent_resource_param_name(
                 cls, join(cls.member_param, rule))

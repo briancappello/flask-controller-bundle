@@ -1,6 +1,7 @@
 from flask_unchained import Bundle
 
-from .constants import ALL_METHODS, CREATE, DELETE, GET, INDEX, PATCH, PUT
+from .constants import (ALL_METHODS, INDEX_METHODS, MEMBER_METHODS,
+                        CREATE, DELETE, GET, INDEX, PATCH, PUT)
 from .controller import Controller
 from .decorators import no_route, route
 from .register_blueprints_hook import RegisterBlueprintsHook

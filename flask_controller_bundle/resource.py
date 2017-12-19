@@ -17,14 +17,5 @@ class Resource(Controller, metaclass=ResourceMeta):
     @classmethod
     def method_as_view(cls, method_name, *class_args, **class_kwargs):
         view = super().method_as_view(method_name, *class_args, **class_kwargs)
-        _, view.methods, _ = cls.lookup_resource_method(method_name)
+        view.methods = cls.resource_methods.get(method_name, None)
         return view
-
-    @classmethod
-    def lookup_resource_method(cls, method_name):
-        """returns a 3-tuple: found, http_methods, is_member"""
-        if method_name in cls.index_method_map:
-            return True, cls.index_method_map[method_name], False
-        elif method_name in cls.member_method_map:
-            return True, cls.member_method_map[method_name], True
-        return False, None, False
