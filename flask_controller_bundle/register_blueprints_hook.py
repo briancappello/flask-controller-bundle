@@ -15,6 +15,11 @@ class RegisterBlueprintsHook(AppFactoryHook):
             url_prefix = (blueprint.url_prefix or '').rstrip('/')
             app.register_blueprint(blueprint, url_prefix=url_prefix)
 
+            debug_msg = f'Blueprint(name={blueprint.name!r}'
+            if url_prefix:
+                debug_msg += f', url_prefix={blueprint.url_prefix!r}'
+            self.debug(debug_msg + ')')
+
     def collect_from_bundle(self, bundle: Bundle):
         bundle_blueprints = dict(super().collect_from_bundle(bundle))
         if not bundle_blueprints:

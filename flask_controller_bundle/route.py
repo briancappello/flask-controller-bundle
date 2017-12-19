@@ -87,5 +87,12 @@ class Route:
         new.__dict__ = self.__dict__.copy()
         return new
 
+    @property
+    def full_name(self):
+        prefix = self.view_func.__module__
+        if self._controller_name:
+            prefix = f'{prefix}.{self._controller_name}'
+        return f'{prefix}.{self.method_name}'
+
     def __repr__(self):
         return f'<Route endpoint={self.endpoint}>'

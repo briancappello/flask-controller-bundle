@@ -20,6 +20,8 @@ class RegisterRoutesHook(AppFactoryHook):
                                  view_func=route.view_func,
                                  **route.rule_options)
 
+                self.debug(f'Route({route.full_rule!r}, {route.full_name})')
+
     def collect_from_bundle(self, bundle: Bundle):
         if not bundle.app_bundle:
             return []
