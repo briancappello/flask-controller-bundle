@@ -11,6 +11,12 @@ from .route import Route
 from .utils import join
 
 
+_missing = object()
+
+def missing_to_none(arg):
+    return None if arg == _missing else arg
+
+
 def controller(url_prefix_or_controller_cls, controller_cls=None):
     url_prefix, controller_cls = _normalize_args(
         url_prefix_or_controller_cls, controller_cls, _is_controller_cls)
@@ -21,28 +27,37 @@ def controller(url_prefix_or_controller_cls, controller_cls=None):
         yield route
 
 
-def func(rule_or_view_func, view_func=None, blueprint=None, defaults=None,
-         endpoint=None, methods=None, **rule_options):
+def func(rule_or_view_func, view_func=_missing, blueprint=_missing,
+         defaults=_missing, endpoint=_missing, methods=_missing,
+         only_if=_missing, **rule_options):
     rule, view_func = _normalize_args(
         rule_or_view_func, view_func, _is_view_func)
     route = getattr(view_func, ROUTE_ATTR, None)  # type: Route
     if route:
+        # we only want to override options if they were explicitly passed
         route = route.copy()
         if isinstance(rule, str):
             route.rule = rule
-        if blueprint is not None:
+        if blueprint is not _missing:
             route.blueprint = blueprint
-        if endpoint is not None:
+        if endpoint is not _missing:
             route.endpoint = endpoint
-        if defaults is not None:
+        if defaults is not _missing:
             route.defaults = defaults
-        if methods is not None:
+        if methods is not _missing:
             route.methods = methods
+        if only_if is not _missing:
+            route.only_if = only_if
         route.rule_options.update(rule_options)
         yield route
     else:
-        yield Route(rule, view_func, blueprint=blueprint, defaults=defaults,
-                    endpoint=endpoint, methods=methods, **rule_options)
+        yield Route(rule, view_func,
+                    blueprint=missing_to_none(blueprint),
+                    defaults=missing_to_none(defaults),
+                    endpoint=missing_to_none(endpoint),
+                    methods=missing_to_none(methods),
+                    only_if=missing_to_none(only_if),
+                    **rule_options)
 
 
 def include(module_name, attr_name='routes', exclude=None, only=None):
@@ -93,11 +108,18 @@ def resource(url_prefix_or_resource_cls, resource_cls=None, subresources=None):
         route.view_func = resource_cls.method_as_view(route.method_name)
         yield route
 
-    for route in reduce_routes(subresources):  # type: Route
-        route = route.copy()
-        route.blueprint = resource_cls.blueprint
-        route.rule = resource_cls.subresource_route_rule(route)
-        yield route
+    for subroute in reduce_routes(subresources):  # type: Route
+        subroute = subroute.copy()
+
+        bp_name = resource_cls.blueprint and resource_cls.blueprint.name
+        if subroute.bp_name and (not bp_name or bp_name != subroute.bp_name):
+            from warnings import warn
+            warn(f'Warning: overriding subresource blueprint '
+                 f'{subroute.bp_name!r} with {bp_name!r}')
+        subroute.blueprint = resource_cls.blueprint
+
+        subroute.rule = resource_cls.subresource_route_rule(subroute)
+        yield subroute
 
     resource_cls.url_prefix = resource_url_prefix
 
@@ -120,8 +142,8 @@ def _is_controller_cls(controller_cls, has_rule):
     if is_controller and not is_resource:
         return True
     elif is_resource:
-        raise ValueError(f'please use the resource function to include '
-                         f'{controller_cls}')
+        raise TypeError(f'please use the resource function to include '
+                        f'{controller_cls}')
 
     if has_rule:
         raise ValueError('the `controller_cls` argument is required when the '
@@ -164,4 +186,3 @@ def _normalize_args(maybe_str, maybe_none, test):
             return None, maybe_str
     except ValueError as e:
         raise ValueError(f'{str(e)} (got {maybe_str}, {maybe_none})')
-    raise NotImplementedError
