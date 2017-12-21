@@ -2,6 +2,24 @@ from .utils import join, method_name_to_url, snake_case
 
 
 class Route:
+    """
+    This is a semi-private class that you most likely shouldn't use directly.
+    Instead, you should use the public functions in `routes`, and the `route`
+    and `no_route` decorators.
+
+    This class is used to store an **intermediate** representation of route
+    details as an attribute on view functions and class view methods.
+
+    Most notably, this class's rule and full_rule attributes may not represent
+    the final url rule that gets registered with Flask (especially true for
+    Controller and Resource view methods - use TheControllerClass.route_rule).
+
+    Further gotchas with Controller and Resource routes include that their
+    view_func must be finalized from the outside using
+    TheControllerClass.method_as_view, and for subresources, the blueprint
+    specified here can (will) be overridden by the parent resource's blueprint.
+    (If it does get overridden, a warning will at least be issued.)
+    """
     def __init__(self, rule, view_func, blueprint=None, defaults=None,
                  endpoint=None, is_member=False, methods=None, only_if=None,
                  **rule_options):
@@ -32,6 +50,12 @@ class Route:
         return self.blueprint.url_prefix
 
     @property
+    def bp_name(self):
+        if not self.blueprint:
+            return None
+        return self.blueprint.name
+
+    @property
     def defaults(self):
         return self.rule_options['defaults']
 
@@ -41,14 +65,13 @@ class Route:
 
     @property
     def endpoint(self):
-        blueprint_name = self.blueprint and self.blueprint.name or ''
         if self._endpoint:
             return self._endpoint
         elif self._controller_name:
             suffix = f'{snake_case(self._controller_name)}.{self.method_name}'
-            return blueprint_name and f'{blueprint_name}.{suffix}' or suffix
-        elif blueprint_name:
-            return f'{blueprint_name}.{self.method_name}'
+            return self.bp_name and f'{self.bp_name}.{suffix}' or suffix
+        elif self.bp_name:
+            return f'{self.bp_name}.{self.method_name}'
         return f'{self.view_func.__module__}.{self.method_name}'
 
     @endpoint.setter
