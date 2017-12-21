@@ -59,7 +59,7 @@ class ResourceMeta(ControllerMeta):
 
         routes = getattr(cls, ROUTES_ATTR, {})
         for method_name in ALL_METHODS:
-            if not getattr(cls, method_name, None):
+            if not clsdict.get(method_name):
                 continue
 
             if method_name in INDEX_METHODS:
@@ -68,12 +68,7 @@ class ResourceMeta(ControllerMeta):
                 rule = deep_getattr(clsdict, bases, 'member_param')
 
             route = routes.get(method_name)
-            if route:
-                route.rule = rule
-            else:
-                route = Route(rule, getattr(cls, method_name))
-                route.blueprint = deep_getattr(clsdict, bases, 'blueprint')
-                route._controller_name = name
+            route.rule = rule
             routes[method_name] = route
         setattr(cls, ROUTES_ATTR, routes)
 
@@ -82,12 +77,7 @@ class ResourceMeta(ControllerMeta):
     def route_rule(cls, route: Route):
         rule = route.rule
         if not rule:
-            if route.method_name in INDEX_METHODS:
-                rule = '/'
-            elif route.method_name in MEMBER_METHODS:
-                rule = cls.member_param
-            else:
-                rule = method_name_to_url(route.method_name)
+            rule = method_name_to_url(route.method_name)
         if route.is_member:
             rule = rename_parent_resource_param_name(
                 cls, join(cls.member_param, rule))
@@ -116,9 +106,9 @@ def deep_getattr(clsdict, bases, name, default=sentinel):
 
 def get_not_views(clsdict, bases):
     not_views = deep_getattr({}, bases, NO_ROUTES_ATTR, [])
-    return ({n for n, m in clsdict.items()
-             if is_view_func(n, m)
-             and not getattr(m, ROUTE_ATTR, None)}.union(not_views))
+    return ({name for name, method in clsdict.items()
+             if is_view_func(name, method)
+             and not getattr(method, ROUTE_ATTR, None)}.union(not_views))
 
 
 def get_remove_suffixes(name, bases, extras):
