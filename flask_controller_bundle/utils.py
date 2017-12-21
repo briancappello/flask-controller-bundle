@@ -1,6 +1,6 @@
 import re
 
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from urllib.parse import urlsplit
 
 from flask import current_app as app, request, url_for
@@ -25,10 +25,15 @@ def controller_name(cls) -> str:
 
 
 def get_param_tuples(url_rule) -> List[Tuple[str, str]]:
-    return [(t[:-1], n) for t, n in re.findall(PARAM_NAME_RE, url_rule)]
+    if not url_rule:
+        return []
+    return [(type_[:-1], name) for type_, name
+            in re.findall(PARAM_NAME_RE, url_rule)]
 
 
-def get_last_param_name(url_rule) -> str:
+def get_last_param_name(url_rule) -> Optional[str]:
+    if not url_rule:
+        return None
     match = re.search(LAST_PARAM_NAME_RE, url_rule)
     return match.group('param_name') if match else None
 
@@ -50,17 +55,17 @@ def get_url(endpoint_or_url_or_config_key, _cls=None, **url_kwargs):
     if not what or '/' in what:
         return what
 
-    # if what is an endpoint
-    try:
-        return url_for(what, **url_kwargs)
-    except Exception as e:
-        if _cls is None:
-            raise e
+    # check if it's a class method name, and try that endpoint
+    if _cls and '.' not in what:
+        routes = getattr(_cls, ROUTES_ATTR)
+        route = routes.get(what)
+        try:
+            return url_for(route.endpoint, **url_kwargs)
+        except:
+            pass
 
-    # nope, maybe it's a class method name, let's try that endpoint
-    routes = getattr(_cls, ROUTES_ATTR)
-    route = routes.get(what)
-    return url_for(route.endpoint, **url_kwargs)
+    # what must be an endpoint
+    return url_for(what, **url_kwargs)
 
 
 def join(*args, trailing_slash=False):
@@ -71,8 +76,8 @@ def join(*args, trailing_slash=False):
     """
     dirty_path = '/'.join(map(lambda x: x and x or '', args))
     path = re.sub(r'/+', '/', dirty_path)
-    if path == '/':
-        return path
+    if path in {'', '/'}:
+        return '/'
     path = path.rstrip('/')
     return path if not trailing_slash else path + '/'
 
