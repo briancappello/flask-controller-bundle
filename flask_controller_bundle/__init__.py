@@ -13,4 +13,4 @@ from .controller_bundle_store import ControllerBundleStore
 
 class FlaskControllerBundle(Bundle):
     hooks = [RegisterBlueprintsHook, RegisterRoutesHook]
-    store = ControllerBundleStore()
+    store = ControllerBundleStore
