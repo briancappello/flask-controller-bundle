@@ -40,7 +40,7 @@ setup(
     install_requires=read_requirements('requirements.txt'),
     python_requires='>=3.6',
     extras_require={
-        'test': ['coverage', 'pytest', 'pytest-flask'],
+        'test': ['blinker', 'coverage', 'pytest', 'pytest-flask'],
     },
     include_package_data=True,
     zip_safe=False,
