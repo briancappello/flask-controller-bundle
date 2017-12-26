@@ -2,7 +2,7 @@ from types import FunctionType
 
 from .attr_constants import (ABSTRACT_ATTR, NO_ROUTE_ATTR, NO_ROUTES_ATTR,
                              REMOVE_SUFFIXES_ATTR, ROUTE_ATTR, ROUTES_ATTR)
-from .constants import (ALL_METHODS, INDEX_METHODS, MEMBER_METHODS,
+from .constants import (ALL_METHODS, INDEX_METHODS,
                         CREATE, DELETE, GET, INDEX, PATCH, PUT)
 from .route import Route
 from .utils import controller_name, join, get_param_tuples, method_name_to_url
