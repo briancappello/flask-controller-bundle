@@ -1,7 +1,13 @@
+import os
+
+from codecs import open
 from setuptools import setup, find_packages
 
 
-with open('README.md', encoding='utf-8') as f:
+ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
+
+
+with open(os.path.join(ROOT_DIR, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 
@@ -9,14 +15,14 @@ def read_requirements(filename):
     def is_pkg(line):
         return line and not line.startswith(('--', 'git', '#'))
 
-    with open(filename, encoding='utf-8') as f:
+    with open(os.path.join(ROOT_DIR, filename), encoding='utf-8') as f:
         return [line for line in f.read().splitlines() if is_pkg(line)]
 
 
 setup(
     name='Flask Controller Bundle',
     version='0.1.0',
-    description='Adds declarative routing and (better) controller classes to Flask',
+    description='Adds declarative routes and class-based views to Flask Unchained',
     long_description=long_description,
     url='https://github.com/briancappello/flask-controller-bundle',
     author='Brian Cappello',
@@ -26,11 +32,16 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
     ],
-    packages=find_packages(include=['flask_controller_bundle']),
+    packages=find_packages(exclude=['tests']),
     install_requires=read_requirements('requirements.txt'),
+    python_requires='>=3.6',
+    extras_require={
+        'test': ['coverage', 'pytest', 'pytest-flask'],
+    },
     include_package_data=True,
-    zip_safe=True,
+    zip_safe=False,
 )

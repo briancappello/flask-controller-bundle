@@ -1,6 +1,9 @@
-.cache/
 *.egg-info
-__pycache__/
-
+.cache/
 .coverage
+.tox/
+
+__pycache__/
+build/
 coverage_html_report/
+dist/

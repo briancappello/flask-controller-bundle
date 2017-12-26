@@ -1,0 +1,3 @@
+include LICENSE .coveragerc pytest.ini requirements.txt tox.ini
+include *.py
+recursive-include tests *.py
