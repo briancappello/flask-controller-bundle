@@ -11,6 +11,8 @@ from .utils import controller_name, join, get_param_tuples, method_name_to_url
 CONTROLLER_REMOVE_EXTRA_SUFFIXES = ['View']
 RESOURCE_REMOVE_EXTRA_SUFFIXES = ['MethodView']
 
+_missing = object()
+
 
 class ControllerMeta(type):
     def __new__(mcs, name, bases, clsdict):
@@ -88,18 +90,15 @@ class ResourceMeta(ControllerMeta):
         return rename_parent_resource_param_name(cls, rule)
 
 
-sentinel = object()
-
-
-def deep_getattr(clsdict, bases, name, default=sentinel):
-    value = clsdict.get(name, sentinel)
-    if value != sentinel:
+def deep_getattr(clsdict, bases, name, default=_missing):
+    value = clsdict.get(name, _missing)
+    if value != _missing:
         return value
     for base in bases:
-        value = getattr(base, name, sentinel)
-        if value != sentinel:
+        value = getattr(base, name, _missing)
+        if value != _missing:
             return value
-    if default != sentinel:
+    if default != _missing:
         return default
     raise AttributeError(name)
 
