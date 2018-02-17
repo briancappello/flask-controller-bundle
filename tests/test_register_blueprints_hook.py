@@ -1,7 +1,7 @@
 import pytest
 
-from flask_controller_bundle import RegisterBlueprintsHook
-from flask_unchained.unchained_extension import UnchainedStore
+from flask_controller_bundle.hooks import RegisterBlueprintsHook
+from flask_unchained.unchained import Unchained
 
 from .fixtures.app_bundle import AppBundle
 from .fixtures.app_bundle.views import one, two
@@ -13,8 +13,8 @@ from .fixtures.empty_bundle import EmptyBundle
 
 @pytest.fixture
 def hook():
-    unchained_store = UnchainedStore(None)
-    return RegisterBlueprintsHook(unchained_store)
+    unchained = Unchained()
+    return RegisterBlueprintsHook(unchained)
 
 
 class TestRegisterBlueprintsHook:

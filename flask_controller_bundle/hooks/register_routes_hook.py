@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_unchained import AppFactoryHook, Bundle
 
-from .routes import reduce_routes
+from ..routes import reduce_routes
 
 
 class RegisterRoutesHook(AppFactoryHook):

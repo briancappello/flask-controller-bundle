@@ -1,9 +1,8 @@
 import pytest
 from types import GeneratorType
 
-from flask_controller_bundle import RegisterRoutesHook
-from flask_controller_bundle import ControllerBundleStore
-from flask_unchained.unchained_extension import UnchainedStore
+from flask_controller_bundle.hooks import RegisterRoutesHook, Store
+from flask_unchained.unchained import Unchained
 
 from .fixtures.app_bundle import AppBundle
 from .fixtures.vendor_bundle import VendorBundle
@@ -12,9 +11,9 @@ from .fixtures.empty_bundle import EmptyBundle
 
 @pytest.fixture
 def hook():
-    bundle_store = ControllerBundleStore()
-    unchained_store = UnchainedStore(None)
-    return RegisterRoutesHook(unchained_store, bundle_store)
+    unchained = Unchained()
+    bundle_store = Store()
+    return RegisterRoutesHook(unchained, bundle_store)
 
 
 class TestRegisterRoutesHook:
