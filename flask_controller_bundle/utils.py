@@ -4,9 +4,7 @@ from typing import List, Optional, Tuple
 from urllib.parse import urlsplit
 
 from flask import current_app as app, request, url_for
-
-# aliases
-from flask_unchained import kebab_case, pluralize, right_replace, snake_case
+from flask_unchained.utils import kebab_case, right_replace, snake_case
 
 from .attr_constants import REMOVE_SUFFIXES_ATTR, ROUTES_ATTR
 

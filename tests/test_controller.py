@@ -2,7 +2,7 @@ import functools
 from flask import Blueprint
 
 from flask_controller_bundle import Controller
-from flask_controller_bundle import utils
+
 
 bp = Blueprint('bp', __name__, url_prefix='/bp')
 

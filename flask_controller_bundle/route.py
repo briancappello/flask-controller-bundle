@@ -1,4 +1,6 @@
-from .utils import join, method_name_to_url, snake_case
+from flask_unchained.utils import snake_case
+
+from .utils import join, method_name_to_url
 
 
 class Route:

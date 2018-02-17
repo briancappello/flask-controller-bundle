@@ -1,6 +1,8 @@
+from flask_unchained.utils import pluralize
+
 from .controller import Controller
 from .metaclasses import ResourceMeta
-from .utils import controller_name, pluralize
+from .utils import controller_name
 
 
 class UrlPrefixDescriptor:
