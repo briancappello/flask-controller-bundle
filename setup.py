@@ -22,7 +22,7 @@ def read_requirements(filename):
 setup(
     name='Flask Controller Bundle',
     version='0.1.0',
-    description='Adds declarative routes and class-based views to Flask Unchained',
+    description='Adds declarative routes and class views to Flask Unchained',
     long_description=long_description,
     url='https://github.com/briancappello/flask-controller-bundle',
     author='Brian Cappello',

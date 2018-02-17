@@ -108,7 +108,7 @@ class Route:
     @property
     def full_rule(self):
         if not self.rule:
-            raise Exception(f'{self} is not fully initialized (missing url rule)')
+            raise Exception(f'{self} not fully initialized (missing url rule)')
         return join(self.bp_prefix, self.rule)
 
     def copy(self):

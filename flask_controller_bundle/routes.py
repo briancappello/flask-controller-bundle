@@ -32,6 +32,7 @@ def func(rule_or_view_func, view_func=_missing, blueprint=_missing,
          only_if=_missing, **rule_options):
     rule, view_func = _normalize_args(
         rule_or_view_func, view_func, _is_view_func)
+
     route = getattr(view_func, ROUTE_ATTR, None)  # type: Route
     if route:
         # we only want to override options if they were explicitly passed
