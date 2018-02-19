@@ -7,7 +7,7 @@ class RegisterBlueprintsHook(AppFactoryHook):
     priority = 25
 
     bundle_module_name = 'views'
-    bundle_override_module_name_attr = 'blueprints_module_name'
+    bundle_override_module_name_attr = 'views_module_name'
 
     action_category = 'blueprints'
     action_table_columns = ['name', 'url_prefix']
