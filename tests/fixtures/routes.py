@@ -19,9 +19,7 @@ implicit_routes = [
     resource(UserResource, subresources=[
         resource(RoleResource),
     ]),
-    prefix('/products', [
-        controller(ProductController),
-    ]),
+    controller(ProductController),
     func(simple),
     include('tests.fixtures.other_routes', attr_name='implicit'),
 ]

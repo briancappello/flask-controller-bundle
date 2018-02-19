@@ -29,12 +29,18 @@ def controller(url_prefix_or_controller_cls: Union[str, Type[Controller]],
                ) -> RouteGenerator:
     url_prefix, controller_cls = _normalize_args(
         url_prefix_or_controller_cls, controller_cls, _is_controller_cls)
+
+    # FIXME this business of needing to set and then restore the class's
+    # url_prefix is kinda very crap. (also applies in the resource function)
+    controller_url_prefix = controller_cls.url_prefix
+    if url_prefix:
+        controller_cls.url_prefix = url_prefix
+
     routes = getattr(controller_cls, CONTROLLER_ROUTES_ATTR).values()
-    for route in reduce_routes(routes):  # type: Route
-        route = route.copy()
-        route.rule = join(url_prefix, controller_cls.route_rule(route))
-        route.view_func = controller_cls.method_as_view(route.method_name)
-        yield route
+
+    yield from _normalize_controller_routes(routes, controller_cls)
+
+    controller_cls.url_prefix = controller_url_prefix
 
 
 def func(rule_or_view_func: Union[str, Callable],
@@ -137,11 +143,8 @@ def resource(url_prefix_or_resource_cls: Union[str, Type[Resource]],
         resource_cls.url_prefix = url_prefix
 
     routes = getattr(resource_cls, CONTROLLER_ROUTES_ATTR).values()
-    for route in reduce_routes(routes):  # type: Route
-        route = route.copy()
-        route.rule = resource_cls.route_rule(route)
-        route.view_func = resource_cls.method_as_view(route.method_name)
-        yield route
+
+    yield from _normalize_controller_routes(routes, resource_cls)
 
     for subroute in reduce_routes(subresources):  # type: Route
         subroute = subroute.copy()
@@ -223,3 +226,15 @@ def _normalize_args(maybe_str, maybe_none, test):
             return None, maybe_str
     except ValueError as e:
         raise ValueError(f'{str(e)} (got {maybe_str}, {maybe_none})')
+
+
+def _normalize_controller_routes(rules: Iterable[Route],
+                                 controller_cls: Type[Controller],
+                                 ) -> RouteGenerator:
+    for route in reduce_routes(rules):
+        route = route.copy()
+        route.blueprint = controller_cls.blueprint
+        route._controller_name = controller_cls.__name__
+        route.view_func = controller_cls.method_as_view(route.method_name)
+        route.rule = controller_cls.route_rule(route)
+        yield route

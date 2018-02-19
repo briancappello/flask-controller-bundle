@@ -34,6 +34,8 @@ class SiteController(Controller):
 
 
 class ProductController(Controller):
+    url_prefix = '/products'
+
     @route('/')
     def index(self):
         return self.render('index')

@@ -3,6 +3,9 @@ from flask_unchained.utils import snake_case
 from .utils import join, method_name_to_url
 
 
+# FIXME should refactor this into Route and ControllerRoute(Route)
+# would make it much easier to reason about, do state validation
+
 class Route:
     """
     This is a semi-private class that you most likely shouldn't use directly.
@@ -82,6 +85,8 @@ class Route:
 
     @property
     def method_name(self):
+        if isinstance(self.view_func, str):
+            return self.view_func
         return self.view_func.__name__
 
     @property
