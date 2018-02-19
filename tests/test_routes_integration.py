@@ -17,12 +17,14 @@ EXPECTED_RESULTS = [
     ('site_controller.index', '/', ['GET']),
     ('site_controller.about', '/about', ['GET']),
     ('site_controller.terms', '/terms', ['GET']),
+    ('site_controller.foobar', '/foobar', ['GET']),
     ('user_resource.index', '/users', ['GET']),
     ('user_resource.create', '/users', ['POST']),
     ('user_resource.get', '/users/<int:id>', ['GET']),
     ('user_resource.put', '/users/<int:id>', ['PUT']),
     ('user_resource.patch', '/users/<int:id>', ['PATCH']),
     ('user_resource.delete', '/users/<int:id>', ['DELETE']),
+    ('user_resource.foobar', '/users/foobar', ['GET']),  # FIXME?
     ('role_resource.index', '/users/<int:user_id>/roles', ['GET']),
     ('role_resource.create', '/users/<int:user_id>/roles', ['POST']),
     ('role_resource.get', '/users/<int:user_id>/roles/<int:id>', ['GET']),
@@ -44,12 +46,14 @@ EXPECTED_DEEP_RESULTS = [
     ('site_controller.index', '/app/site', ['GET']),
     ('site_controller.about', '/app/site/about', ['GET']),
     ('site_controller.terms', '/app/site/terms', ['GET']),
+    ('site_controller.foobar', '/app/site/foobar', ['GET']),
     ('user_resource.index', '/app/pre/users', ['GET']),
     ('user_resource.create', '/app/pre/users', ['POST']),
     ('user_resource.get', '/app/pre/users/<int:id>', ['GET']),
     ('user_resource.put', '/app/pre/users/<int:id>', ['PUT']),
     ('user_resource.patch', '/app/pre/users/<int:id>', ['PATCH']),
     ('user_resource.delete', '/app/pre/users/<int:id>', ['DELETE']),
+    ('user_resource.foobar', '/app/pre/users/foobar', ['GET']),  # FIXME?
     ('role_resource.index', '/app/pre/users/<int:user_id>/roles', ['GET']),
     ('role_resource.create', '/app/pre/users/<int:user_id>/roles', ['POST']),
     ('role_resource.get', '/app/pre/users/<int:user_id>/roles/<int:id>', ['GET']),
@@ -72,7 +76,8 @@ EXPECTED_DEEP_BP_RESULTS = convert_to_results_with_blueprint(EXPECTED_DEEP_RESUL
 class TestReduceRoutes:
     def test_explicit_routes(self):
         routes = list(reduce_routes(test_routes.explicit_routes))
-        for i, expected in enumerate(EXPECTED_RESULTS):
+        for i, expected in enumerate(t for t in EXPECTED_RESULTS
+                                     if 'foobar' not in t[0]):
             route = routes[i]
             assert route.endpoint == expected[0], route.endpoint
             assert route.full_rule == expected[1], route.endpoint
@@ -98,7 +103,8 @@ class TestReduceRoutes:
 class TestReduceRoutesWithBlueprints:
     def test_explicit_routes(self):
         routes = list(reduce_routes(bp_test_routes.explicit_routes))
-        for i, expected in enumerate(EXPECTED_BP_RESULTS):
+        for i, expected in enumerate(t for t in EXPECTED_BP_RESULTS
+                                     if 'foobar' not in t[0]):
             route = routes[i]
             assert route.endpoint == expected[0], route.endpoint
             assert route.full_rule == expected[1], route.endpoint

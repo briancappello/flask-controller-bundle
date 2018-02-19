@@ -1,12 +1,17 @@
-from flask_controller_bundle import func, controller, resource, prefix, include
+from flask_controller_bundle import (
+    controller, func, include, prefix, resource, rule)
 
 from .bp_views import (SiteController, ProductController, simple,
                        UserResource, RoleResource, AnotherResource)
 
 
 explicit_routes = [
-    controller('/', SiteController),
-    resource('/users', UserResource, subresources=[
+    controller('/', SiteController, rules=[
+        rule('/', 'index'),
+        rule('/about', 'about'),
+        rule('/terms', 'terms'),
+    ]),
+    resource('/users', UserResource, rules=[], subresources=[
         resource('/roles', RoleResource),
     ]),
     controller('/products', ProductController),

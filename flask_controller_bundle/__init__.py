@@ -5,7 +5,7 @@ from .constants import (ALL_METHODS, INDEX_METHODS, MEMBER_METHODS,
 from .controller import Controller
 from .decorators import no_route, route
 from .resource import Resource
-from .routes import controller, func, include, prefix, resource
+from .routes import controller, func, include, prefix, resource, rule
 
 
 class FlaskControllerBundle(Bundle):

@@ -26,6 +26,8 @@ def missing_to_none(arg):
 
 def controller(url_prefix_or_controller_cls: Union[str, Type[Controller]],
                controller_cls: Optional[Type[Controller]]=None,
+               *,
+               rules: Optional[Iterable[Union[Route, RouteGenerator]]] = None,
                ) -> RouteGenerator:
     url_prefix, controller_cls = _normalize_args(
         url_prefix_or_controller_cls, controller_cls, _is_controller_cls)
@@ -36,7 +38,8 @@ def controller(url_prefix_or_controller_cls: Union[str, Type[Controller]],
     if url_prefix:
         controller_cls.url_prefix = url_prefix
 
-    routes = getattr(controller_cls, CONTROLLER_ROUTES_ATTR).values()
+    routes = (rules if rules is not None
+              else getattr(controller_cls, CONTROLLER_ROUTES_ATTR).values())
 
     yield from _normalize_controller_routes(routes, controller_cls)
 
@@ -133,6 +136,7 @@ def prefix(url_prefix: str,
 def resource(url_prefix_or_resource_cls: Union[str, Type[Resource]],
              resource_cls: Optional[Type[Resource]]=None,
              *,
+             rules: Optional[Iterable[Union[Route, RouteGenerator]]]=None,
              subresources: Optional[Iterable[RouteGenerator]]=None,
              ) -> RouteGenerator:
     url_prefix, resource_cls = _normalize_args(
@@ -142,9 +146,15 @@ def resource(url_prefix_or_resource_cls: Union[str, Type[Resource]],
     if url_prefix:
         resource_cls.url_prefix = url_prefix
 
-    routes = getattr(resource_cls, CONTROLLER_ROUTES_ATTR).values()
+    routes = getattr(resource_cls, CONTROLLER_ROUTES_ATTR)
+    if rules is not None:
+        routes = {method_name: method_routes
+                  for method_name, method_routes in routes.items()
+                  if method_name in resource_cls.resource_methods}
+        for route in rules:
+            routes[route.method_name] = route
 
-    yield from _normalize_controller_routes(routes, resource_cls)
+    yield from _normalize_controller_routes(routes.values(), resource_cls)
 
     for subroute in reduce_routes(subresources):  # type: Route
         subroute = subroute.copy()
@@ -173,6 +183,21 @@ def reduce_routes(routes: Iterable[Union[Route, RouteGenerator]],
             yield route
         else:
             yield from reduce_routes(route)
+
+
+def rule(rule: str,
+         method_name_or_method: Union[str, Callable],
+         *,
+         defaults: Optional[Defaults]=None,
+         endpoint: Optional[str]=None,
+         is_member: Optional[bool]=False,
+         methods: Optional[Methods]=None,
+         only_if: Optional[Callable]=None,
+         **rule_options,
+         ) -> RouteGenerator:
+    yield Route(rule, method_name_or_method, defaults=defaults,
+                endpoint=endpoint, is_member=is_member, methods=methods,
+                only_if=only_if, **rule_options)
 
 
 def _is_controller_cls(controller_cls, has_rule):

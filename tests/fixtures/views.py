@@ -32,6 +32,9 @@ class SiteController(Controller):
     def terms(self):
         return self.render('terms')
 
+    def foobar(self):
+        return self.render('foobar')
+
 
 class ProductController(Controller):
     url_prefix = '/products'
@@ -79,6 +82,9 @@ class UserResource(Resource):
 
     def delete(self, id):
         return self.redirect('index')
+
+    def foobar(self):
+        return self.render('foobar')
 
 
 class RoleResource(Resource):

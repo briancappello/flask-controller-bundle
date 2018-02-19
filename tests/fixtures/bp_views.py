@@ -33,13 +33,14 @@ class SiteController(Controller):
     def index(self):
         return self.render('index')
 
-    @route
     def about(self):
         return self.render('about')
 
-    @route
     def terms(self):
         return self.render('terms')
+
+    def foobar(self):
+        return self.render('foobar')
 
 
 class ProductController(Controller):
@@ -49,11 +50,9 @@ class ProductController(Controller):
     def index(self):
         return self.render('index')
 
-    @route
     def good(self):
         return self.render('good')
 
-    @route
     def better(self):
         return self.render('better')
 
@@ -82,6 +81,9 @@ class UserResource(Resource):
 
     def delete(self, id):
         return self.redirect('index')
+
+    def foobar(self):
+        return self.render('foobar')
 
 
 class RoleResource(Resource):
