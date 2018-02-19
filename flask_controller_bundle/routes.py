@@ -2,13 +2,20 @@ import importlib
 import inspect
 import sys
 
-from typing import Iterable
+from flask import Blueprint
+from typing import (Any, Callable, Dict, Generator, Iterable, List, Optional,
+                    Set, Tuple, Type, Union)
 
 from .attr_constants import CONTROLLER_ROUTES_ATTR, FN_ROUTES_ATTR
 from .controller import Controller
 from .resource import Resource
 from .route import Route
 from .utils import join, method_name_to_url
+
+Defaults = Dict[str, Any]
+Endpoints = Union[List[str], Tuple[str], Set[str]]
+Methods = Union[List[str], Tuple[str], Set[str]]
+RouteGenerator = Iterable[Route]  # FIXME RouteGenerator = Generator[Route] (??)
 
 
 _missing = object()
@@ -17,7 +24,9 @@ def missing_to_none(arg):
     return None if arg == _missing else arg
 
 
-def controller(url_prefix_or_controller_cls, controller_cls=None):
+def controller(url_prefix_or_controller_cls: Union[str, Type[Controller]],
+               controller_cls: Optional[Type[Controller]]=None,
+               ) -> RouteGenerator:
     url_prefix, controller_cls = _normalize_args(
         url_prefix_or_controller_cls, controller_cls, _is_controller_cls)
     routes = getattr(controller_cls, CONTROLLER_ROUTES_ATTR).values()
@@ -28,9 +37,15 @@ def controller(url_prefix_or_controller_cls, controller_cls=None):
         yield route
 
 
-def func(rule_or_view_func, view_func=_missing, blueprint=_missing,
-         defaults=_missing, endpoint=_missing, methods=_missing,
-         only_if=_missing, **rule_options):
+def func(rule_or_view_func: Union[str, Callable],
+         view_func: Optional[Callable]=_missing,
+         blueprint: Optional[Blueprint]=_missing,
+         defaults: Optional[Defaults]=_missing,
+         endpoint: Optional[str]=_missing,
+         methods: Optional[Methods]=_missing,
+         only_if: Optional[Callable]=_missing,
+         **rule_options,
+         ) -> RouteGenerator:
     rule, view_func = _normalize_args(
         rule_or_view_func, view_func, _is_view_func)
 
@@ -68,7 +83,12 @@ def func(rule_or_view_func, view_func=_missing, blueprint=_missing,
                     **rule_options)
 
 
-def include(module_name, attr_name='routes', exclude=None, only=None):
+def include(module_name: str,
+            attr_name: str='routes',
+            *,
+            exclude: Optional[Endpoints]=None,
+            only: Optional[Endpoints]=None,
+            ) -> RouteGenerator:
     # because routes are generators, once they've been "drained", they can't be
     # used again. under normal end-user-app circumstances this reload probably
     # wouldn't be needed, but it's at least required for the tests to pass
@@ -95,14 +115,20 @@ def include(module_name, attr_name='routes', exclude=None, only=None):
             yield route
 
 
-def prefix(url_prefix: str, children: Iterable):
+def prefix(url_prefix: str,
+           children: Iterable[Union[Route, RouteGenerator]],
+           ) -> RouteGenerator:
     for route in reduce_routes(children):
         route = route.copy()
         route.rule = join(url_prefix, route.rule)
         yield route
 
 
-def resource(url_prefix_or_resource_cls, resource_cls=None, subresources=None):
+def resource(url_prefix_or_resource_cls: Union[str, Type[Resource]],
+             resource_cls: Optional[Type[Resource]]=None,
+             *,
+             subresources: Optional[Iterable[RouteGenerator]]=None,
+             ) -> RouteGenerator:
     url_prefix, resource_cls = _normalize_args(
         url_prefix_or_resource_cls, resource_cls, _is_resource_cls)
 
@@ -134,7 +160,8 @@ def resource(url_prefix_or_resource_cls, resource_cls=None, subresources=None):
     resource_cls.url_prefix = resource_url_prefix
 
 
-def reduce_routes(routes):
+def reduce_routes(routes: Iterable[Union[Route, RouteGenerator]],
+                  ) -> RouteGenerator:
     if not routes:
         raise StopIteration
 
