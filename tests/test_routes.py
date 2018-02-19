@@ -199,15 +199,17 @@ class TestInclude:
             list(include('tests.fixtures.routes'))
 
         with pytest.raises(AttributeError):
-            list(include('tests.fixtures.routes', attr_name='fail'))
+            list(include('tests.fixtures.routes', attr='fail'))
 
     def test_it_only_includes_only(self):
-        routes = list(include('tests.fixtures.other_routes', only=['views.one']))
+        routes = list(include('tests.fixtures.other_routes',
+                              only=['views.one']))
         assert len(routes) == 1
         assert routes[0].endpoint == 'views.one'
 
     def test_it_does_not_include_excludes(self):
-        routes = list(include('tests.fixtures.other_routes', exclude=['views.three']))
+        routes = list(include('tests.fixtures.other_routes',
+                              exclude=['views.three']))
         assert len(routes) == 2
         assert routes[0].endpoint == 'views.one'
         assert routes[1].endpoint == 'views.two'

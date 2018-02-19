@@ -16,9 +16,9 @@ explicit = [
 ]
 
 recursive = [
-    include('tests.fixtures.other_routes', 'explicit'),
+    include('tests.fixtures.other_routes', attr='explicit'),
     prefix('/deep', [
-        include('tests.fixtures.other_routes', attr_name='implicit')
+        include('tests.fixtures.other_routes', attr='implicit')
     ]),
 ]
 

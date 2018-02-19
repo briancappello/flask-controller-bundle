@@ -27,7 +27,7 @@ class TestRegisterRoutesHook:
 
         with pytest.raises(AttributeError) as e:
             hook.collect_from_bundle(EmptyBundle)
-            assert 'could not find a variable named `routes`' in str(e)
+        assert 'Could not find a variable named `routes`' in str(e)
 
     def test_run_hook(self, app, hook):
         with app.test_request_context():

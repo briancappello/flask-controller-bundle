@@ -11,7 +11,7 @@ explicit_routes = [
     ]),
     controller('/products', ProductController),
     func('/simple', simple),
-    include('tests.fixtures.other_bp_routes', attr_name='explicit'),
+    include('tests.fixtures.other_bp_routes', attr='explicit'),
 ]
 
 implicit_routes = [
@@ -23,7 +23,7 @@ implicit_routes = [
         controller(ProductController),
     ]),
     func(simple),
-    include('tests.fixtures.other_bp_routes', attr_name='implicit'),
+    include('tests.fixtures.other_bp_routes', attr='implicit'),
 ]
 
 deep = [
@@ -36,7 +36,7 @@ deep = [
                     # but it should work regardless
                     func(simple),
                     resource(AnotherResource),
-                    include('tests.fixtures.other_bp_routes', attr_name='recursive'),
+                    include('tests.fixtures.other_bp_routes', attr='recursive'),
                 ]),
             ]),
         ]),

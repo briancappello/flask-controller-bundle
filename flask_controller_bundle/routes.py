@@ -90,8 +90,8 @@ def func(rule_or_view_func: Union[str, Callable],
 
 
 def include(module_name: str,
-            attr_name: str='routes',
             *,
+            attr: str='routes',
             exclude: Optional[Endpoints]=None,
             only: Optional[Endpoints]=None,
             ) -> RouteGenerator:
@@ -104,9 +104,9 @@ def include(module_name: str,
         importlib.reload(module)
 
     try:
-        routes = reduce_routes(getattr(module, attr_name))
+        routes = reduce_routes(getattr(module, attr))
     except AttributeError:
-        raise AttributeError(f'Could not find a variable named `routes` '
+        raise AttributeError(f'Could not find a variable named `{attr}` '
                              f'in the {module_name} module!')
 
     def should_include_route(route):
