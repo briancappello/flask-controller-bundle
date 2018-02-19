@@ -1,5 +1,5 @@
 from flask_controller_bundle import Resource, route
-from flask_controller_bundle.attr_constants import ROUTES_ATTR
+from flask_controller_bundle.attr_constants import CONTROLLER_ROUTES_ATTR
 from flask_controller_bundle.constants import ALL_METHODS
 
 
@@ -71,10 +71,13 @@ class TestResource:
                 pass
 
         with app.test_request_context():
-            for method_name, route in getattr(UserController, ROUTES_ATTR).items():
-                app.add_url_rule(UserController.route_rule(route),
-                                 view_func=UserController.method_as_view(method_name),
-                                 endpoint=route.endpoint)
+            for method_name, routes in getattr(UserController,
+                                               CONTROLLER_ROUTES_ATTR).items():
+                for route in routes:
+                    app.add_url_rule(
+                        UserController.route_rule(route),
+                        view_func=UserController.method_as_view(method_name),
+                        endpoint=route.endpoint)
 
             controller = UserController()
             resp = controller.create()
@@ -82,7 +85,7 @@ class TestResource:
             assert resp.location == '/users/1'
 
     def test_it_adds_route_to_extra_view_methods(self):
-        routes = getattr(DefaultResource, ROUTES_ATTR)
+        routes = getattr(DefaultResource, CONTROLLER_ROUTES_ATTR)
         assert 'extra' in routes
 
     def test_route_rule(self):
@@ -94,15 +97,15 @@ class TestResource:
             def b(self):
                 pass
 
-        routes = getattr(FooResource, ROUTES_ATTR)
-        assert FooResource.route_rule(routes['a']) == '/foos/a'
-        assert FooResource.route_rule(routes['b']) == '/foos/<int:foo_id>/b'
+        routes = getattr(FooResource, CONTROLLER_ROUTES_ATTR)
+        assert FooResource.route_rule(routes['a'][0]) == '/foos/a'
+        assert FooResource.route_rule(routes['b'][0]) == '/foos/<int:foo_id>/b'
 
     def test_route_rule_with_resource_methods(self):
-        routes = getattr(DefaultResource, ROUTES_ATTR)
-        assert DefaultResource.route_rule(routes['index']) == '/defaults'
-        assert DefaultResource.route_rule(routes['create']) == '/defaults'
-        assert DefaultResource.route_rule(routes['get']) == '/defaults/<int:id>'
-        assert DefaultResource.route_rule(routes['patch']) == '/defaults/<int:id>'
-        assert DefaultResource.route_rule(routes['put']) == '/defaults/<int:id>'
-        assert DefaultResource.route_rule(routes['delete']) == '/defaults/<int:id>'
+        routes = getattr(DefaultResource, CONTROLLER_ROUTES_ATTR)
+        assert DefaultResource.route_rule(routes['index'][0]) == '/defaults'
+        assert DefaultResource.route_rule(routes['create'][0]) == '/defaults'
+        assert DefaultResource.route_rule(routes['get'][0]) == '/defaults/<int:id>'
+        assert DefaultResource.route_rule(routes['patch'][0]) == '/defaults/<int:id>'
+        assert DefaultResource.route_rule(routes['put'][0]) == '/defaults/<int:id>'
+        assert DefaultResource.route_rule(routes['delete'][0]) == '/defaults/<int:id>'

@@ -2,27 +2,42 @@ import pytest
 
 from flask import Blueprint
 
-from flask_controller_bundle import Controller, Resource, route as route_
-from flask_controller_bundle.attr_constants import ROUTE_ATTR, ROUTES_ATTR
+from flask_controller_bundle import Controller, Resource
+from flask_controller_bundle.attr_constants import (
+    CONTROLLER_ROUTES_ATTR, FN_ROUTES_ATTR)
+from flask_controller_bundle.decorators import route as route_decorator
 from flask_controller_bundle.routes import (
-    func, include, controller, resource, _normalize_args)
+    controller, func, include, resource, _normalize_args)
 
 
 bp = Blueprint('test', __name__)
 bp2 = Blueprint('test2', __name__)
 
 
-def a_view():
+def undecorated_view():
     pass
 
 
-@route_
-def b_view():
+@route_decorator
+def decorated_view():
+    pass
+
+
+@route_decorator('/first', endpoint='first')
+@route_decorator('/second', endpoint='second')
+def multi_route_view():
+    pass
+
+
+@route_decorator(endpoint='default')
+@route_decorator('/first', endpoint='first')
+@route_decorator('/second', endpoint='second')
+def implicit_multi_route_view():
     pass
 
 
 class SiteController(Controller):
-    @route_('/')
+    @route_decorator('/')
     def index(self):
         pass
 
@@ -84,7 +99,10 @@ class TestController:
 
     def test_it_does_not_mutate_existing_routes(self):
         routes = list(controller('/prefix', SiteController))
-        orig_routes = list(getattr(SiteController, ROUTES_ATTR).values())
+        orig_routes = [route
+                       for routes in getattr(SiteController,
+                                             CONTROLLER_ROUTES_ATTR).values()
+                       for route in routes]
         assert orig_routes[0].endpoint == routes[0].endpoint
         assert orig_routes[0].rule == '/'
         assert routes[0].rule == '/prefix'
@@ -92,22 +110,22 @@ class TestController:
 
 class TestFunc:
     def test_it_works_with_undecorated_view(self):
-        route = list(func(a_view))[0]
-        assert route.view_func == a_view
-        assert route.rule == '/a-view'
+        route = list(func(undecorated_view))[0]
+        assert route.view_func == undecorated_view
+        assert route.rule == '/undecorated-view'
         assert route.blueprint is None
-        assert route.endpoint == 'tests.test_routes.a_view'
+        assert route.endpoint == 'tests.test_routes.undecorated_view'
         assert route.defaults is None
         assert route.methods == ['GET']
         assert route.only_if is None
 
     def test_override_rule_options_with_undecorated_view(self):
-        route = list(func('/a/<id>', a_view, blueprint=bp,
+        route = list(func('/a/<id>', undecorated_view, blueprint=bp,
                           endpoint='overridden.endpoint',
                           defaults={'id': 1}, methods=['GET', 'POST'],
                           only_if='only_if'))[0]
         assert route.rule == '/a/<id>'
-        assert route.view_func == a_view
+        assert route.view_func == undecorated_view
         assert route.blueprint == bp
         assert route.endpoint == 'overridden.endpoint'
         assert route.defaults == {'id': 1}
@@ -115,22 +133,22 @@ class TestFunc:
         assert route.only_if is 'only_if'
 
     def test_it_works_with_decorated_view(self):
-        route = list(func(b_view))[0]
-        assert route.view_func == b_view
-        assert route.rule == '/b-view'
+        route = list(func(decorated_view))[0]
+        assert route.view_func == decorated_view
+        assert route.rule == '/decorated-view'
         assert route.blueprint is None
-        assert route.endpoint == 'tests.test_routes.b_view'
+        assert route.endpoint == 'tests.test_routes.decorated_view'
         assert route.defaults is None
         assert route.methods == ['GET']
         assert route.only_if is None
 
     def test_override_rule_options_with_decorated_view(self):
-        route = list(func('/b/<id>', b_view, blueprint=bp,
+        route = list(func('/b/<id>', decorated_view, blueprint=bp,
                           endpoint='overridden.endpoint',
                           defaults={'id': 1}, methods=['GET', 'POST'],
                           only_if='only_if'))[0]
         assert route.rule == '/b/<id>'
-        assert route.view_func == b_view
+        assert route.view_func == decorated_view
         assert route.blueprint == bp
         assert route.endpoint == 'overridden.endpoint'
         assert route.defaults == {'id': 1}
@@ -148,13 +166,26 @@ class TestFunc:
             list(func(None))
 
         with pytest.raises(ValueError):
-            list(func(None, a_view))
+            list(func(None, undecorated_view))
+
+    def test_it_makes_new_route_if_decorated_with_multiple_other_routes(self):
+        route = list(func(multi_route_view))[0]
+        assert route.endpoint == 'tests.test_routes.multi_route_view'
+
+    def test_it_reuses_route_if_url_matches_a_decorated_route(self):
+        route = list(func('/first', multi_route_view, methods=['PUT']))[0]
+        assert route.methods == ['PUT']
+        assert route.endpoint == 'first'
+
+    def test_it_reuses_route_url_implicitly_matches(self):
+        route = list(func(implicit_multi_route_view))[0]
+        assert route.endpoint == 'default'
 
     def test_it_does_not_mutate_existing_routes(self):
-        route = list(func('/foo', b_view))[0]
-        orig_route = getattr(b_view, ROUTE_ATTR)
+        route = list(func('/foo', decorated_view))[0]
+        orig_route = getattr(decorated_view, FN_ROUTES_ATTR)[0]
         assert orig_route.endpoint == route.endpoint
-        assert orig_route.rule == '/b-view'
+        assert orig_route.rule == '/decorated-view'
         assert route.rule == '/foo'
 
 
@@ -214,7 +245,10 @@ class TestResource:
 
     def test_it_does_not_mutate_existing_routes(self):
         routes = list(resource('/prefix', UserResource))
-        orig_routes = list(getattr(UserResource, ROUTES_ATTR).values())
+        orig_routes = [route
+                       for routes in getattr(UserResource,
+                                             CONTROLLER_ROUTES_ATTR).values()
+                       for route in routes]
         assert orig_routes[0].endpoint == routes[0].endpoint
         assert orig_routes[0].rule == '/'
         assert routes[0].rule == '/prefix'
@@ -223,7 +257,10 @@ class TestResource:
         routes = list(resource('/one', UserResource, subresources=[
             resource('/two', RoleResource)
         ]))
-        orig_routes = list(getattr(RoleResource, ROUTES_ATTR).values())
+        orig_routes = [route
+                       for routes in getattr(RoleResource,
+                                             CONTROLLER_ROUTES_ATTR).values()
+                       for route in routes]
         assert orig_routes[0].endpoint == routes[2].endpoint
         assert orig_routes[0].rule == '/'
         assert routes[2].rule == '/one/<int:user_id>/two'

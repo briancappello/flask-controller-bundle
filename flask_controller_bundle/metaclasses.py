@@ -1,9 +1,10 @@
 from types import FunctionType
 
-from .attr_constants import (ABSTRACT_ATTR, NO_ROUTE_ATTR, NO_ROUTES_ATTR,
-                             REMOVE_SUFFIXES_ATTR, ROUTE_ATTR, ROUTES_ATTR)
-from .constants import (ALL_METHODS, INDEX_METHODS,
-                        CREATE, DELETE, GET, INDEX, PATCH, PUT)
+from .attr_constants import (
+    ABSTRACT_ATTR, CONTROLLER_ROUTES_ATTR, FN_ROUTES_ATTR, NO_ROUTES_ATTR,
+    NOT_VIEWS_ATTR, REMOVE_SUFFIXES_ATTR)
+from .constants import (
+    ALL_METHODS, INDEX_METHODS, CREATE, DELETE, GET, INDEX, PATCH, PUT)
 from .route import Route
 from .utils import controller_name, join, get_param_tuples, method_name_to_url
 
@@ -18,26 +19,27 @@ class ControllerMeta(type):
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
         if ABSTRACT_ATTR in clsdict:
-            setattr(cls, NO_ROUTES_ATTR, get_not_views(clsdict, bases))
+            setattr(cls, NOT_VIEWS_ATTR, get_not_views(clsdict, bases))
             setattr(cls, REMOVE_SUFFIXES_ATTR, get_remove_suffixes(
                 name, bases, CONTROLLER_REMOVE_EXTRA_SUFFIXES))
             return cls
 
-        routes = getattr(cls, ROUTES_ATTR, {})
-        not_views = deep_getattr({}, bases, NO_ROUTES_ATTR)
+        controller_routes = getattr(cls, CONTROLLER_ROUTES_ATTR, {}).copy()
+        not_views = deep_getattr({}, bases, NOT_VIEWS_ATTR)
+
         for method_name, method in clsdict.items():
             if (method_name in not_views
                     or not is_view_func(method_name, method)):
                 continue
 
-            route = getattr(method, ROUTE_ATTR, None)
-            if not route:
-                route = Route(None, method)
-            route.blueprint = deep_getattr(clsdict, bases, 'blueprint')
-            route._controller_name = name
-            routes[method_name] = route
+            method_routes = getattr(method, FN_ROUTES_ATTR,
+                                    [Route(None, method)])
+            for route in method_routes:
+                route.blueprint = deep_getattr(clsdict, bases, 'blueprint')
+                route._controller_name = name
+            controller_routes[method_name] = method_routes
 
-        setattr(cls, ROUTES_ATTR, routes)
+        setattr(cls, CONTROLLER_ROUTES_ATTR, controller_routes)
         return cls
 
     def route_rule(cls, route: Route):
@@ -59,7 +61,7 @@ class ResourceMeta(ControllerMeta):
                 name, bases, RESOURCE_REMOVE_EXTRA_SUFFIXES))
             return cls
 
-        routes = getattr(cls, ROUTES_ATTR, {})
+        controller_routes = getattr(cls, CONTROLLER_ROUTES_ATTR)
         for method_name in ALL_METHODS:
             if not clsdict.get(method_name):
                 continue
@@ -69,10 +71,10 @@ class ResourceMeta(ControllerMeta):
             else:
                 rule = deep_getattr(clsdict, bases, 'member_param')
 
-            route = routes.get(method_name)
+            route = controller_routes.get(method_name)[0]
             route.rule = rule
-            routes[method_name] = route
-        setattr(cls, ROUTES_ATTR, routes)
+            controller_routes[method_name] = [route]
+        setattr(cls, CONTROLLER_ROUTES_ATTR, controller_routes)
 
         return cls
 
@@ -104,10 +106,10 @@ def deep_getattr(clsdict, bases, name, default=_missing):
 
 
 def get_not_views(clsdict, bases):
-    not_views = deep_getattr({}, bases, NO_ROUTES_ATTR, [])
+    not_views = deep_getattr({}, bases, NOT_VIEWS_ATTR, [])
     return ({name for name, method in clsdict.items()
              if is_view_func(name, method)
-             and not getattr(method, ROUTE_ATTR, None)}.union(not_views))
+             and not getattr(method, FN_ROUTES_ATTR, None)}.union(not_views))
 
 
 def get_remove_suffixes(name, bases, extras):
@@ -120,8 +122,8 @@ def get_remove_suffixes(name, bases, extras):
 def is_view_func(method_name, method):
     is_function = isinstance(method, FunctionType)
     is_private = method_name.startswith('_')
-    is_no_route = getattr(method, NO_ROUTE_ATTR, False)
-    return is_function and not (is_private or is_no_route)
+    has_no_routes = getattr(method, NO_ROUTES_ATTR, False)
+    return is_function and not (is_private or has_no_routes)
 
 
 def rename_parent_resource_param_name(parent_cls, url_rule):

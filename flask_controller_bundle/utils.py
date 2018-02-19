@@ -5,8 +5,9 @@ from urllib.parse import urlsplit
 
 from flask import current_app as app, request, url_for
 from flask_unchained.utils import kebab_case, right_replace, snake_case
+from werkzeug.routing import BuildError
 
-from .attr_constants import REMOVE_SUFFIXES_ATTR, ROUTES_ATTR
+from .attr_constants import CONTROLLER_ROUTES_ATTR, REMOVE_SUFFIXES_ATTR
 
 
 PARAM_NAME_RE = re.compile(r'<(\w+:)?(?P<param_name>\w+)>')
@@ -55,11 +56,15 @@ def get_url(endpoint_or_url_or_config_key, _cls=None, **url_kwargs):
 
     # check if it's a class method name, and try that endpoint
     if _cls and '.' not in what:
-        routes = getattr(_cls, ROUTES_ATTR)
-        route = routes.get(what)
+        controller_routes = getattr(_cls, CONTROLLER_ROUTES_ATTR)
+        method_routes = controller_routes.get(what)
         try:
-            return url_for(route.endpoint, **url_kwargs)
-        except:
+            return url_for(method_routes[0].endpoint, **url_kwargs)
+        except (
+            BuildError,  # url not found
+            IndexError,  # method_routes[0] is out-of-range
+            TypeError,   # method_routes is None
+        ):
             pass
 
     # what must be an endpoint

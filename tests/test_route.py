@@ -1,7 +1,7 @@
 import pytest
 
 from flask_controller_bundle import Controller
-from flask_controller_bundle.attr_constants import ROUTES_ATTR
+from flask_controller_bundle.attr_constants import CONTROLLER_ROUTES_ATTR
 from flask_controller_bundle.route import Route
 
 
@@ -24,16 +24,17 @@ class TestRoute:
             def index(self):
                 pass
 
-        route = getattr(SomeController, ROUTES_ATTR)['index']
-        with pytest.raises(Exception):
+        route = getattr(SomeController, CONTROLLER_ROUTES_ATTR)['index'][0]
+        with pytest.raises(Exception) as e:
             fail = route.full_rule
+        assert 'not fully initialized' in str(e)
 
     def test_full_name_with_controller(self):
         class SomeController(Controller):
             def index(self):
                 pass
 
-        route = getattr(SomeController, ROUTES_ATTR)['index']
+        route = getattr(SomeController, CONTROLLER_ROUTES_ATTR)['index'][0]
         assert route.full_name == 'tests.test_route.SomeController.index'
 
     def test_full_name_with_func(self):

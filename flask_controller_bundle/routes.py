@@ -4,11 +4,11 @@ import sys
 
 from typing import Iterable
 
-from .attr_constants import ROUTE_ATTR, ROUTES_ATTR
+from .attr_constants import CONTROLLER_ROUTES_ATTR, FN_ROUTES_ATTR
 from .controller import Controller
 from .resource import Resource
 from .route import Route
-from .utils import join
+from .utils import join, method_name_to_url
 
 
 _missing = object()
@@ -20,7 +20,8 @@ def missing_to_none(arg):
 def controller(url_prefix_or_controller_cls, controller_cls=None):
     url_prefix, controller_cls = _normalize_args(
         url_prefix_or_controller_cls, controller_cls, _is_controller_cls)
-    for route in getattr(controller_cls, ROUTES_ATTR).values():  # type: Route
+    routes = getattr(controller_cls, CONTROLLER_ROUTES_ATTR).values()
+    for route in reduce_routes(routes):  # type: Route
         route = route.copy()
         route.rule = join(url_prefix, controller_cls.route_rule(route))
         route.view_func = controller_cls.method_as_view(route.method_name)
@@ -33,10 +34,16 @@ def func(rule_or_view_func, view_func=_missing, blueprint=_missing,
     rule, view_func = _normalize_args(
         rule_or_view_func, view_func, _is_view_func)
 
-    route = getattr(view_func, ROUTE_ATTR, None)  # type: Route
-    if route:
+    routes = getattr(view_func, FN_ROUTES_ATTR, [])
+    routes_by_rule = {route.rule: route for route in routes}
+    lookup_rule = (rule if isinstance(rule, str)
+                   else method_name_to_url(view_func.__name__))
+    existing_route = (routes[0] if len(routes) == 1
+                      else routes_by_rule.get(lookup_rule, None))
+
+    if existing_route:
         # we only want to override options if they were explicitly passed
-        route = route.copy()
+        route = existing_route.copy()
         if isinstance(rule, str):
             route.rule = rule
         if blueprint is not _missing:
@@ -103,7 +110,8 @@ def resource(url_prefix_or_resource_cls, resource_cls=None, subresources=None):
     if url_prefix:
         resource_cls.url_prefix = url_prefix
 
-    for route in getattr(resource_cls, ROUTES_ATTR).values():  # type: Route
+    routes = getattr(resource_cls, CONTROLLER_ROUTES_ATTR).values()
+    for route in reduce_routes(routes):  # type: Route
         route = route.copy()
         route.rule = resource_cls.route_rule(route)
         route.view_func = resource_cls.method_as_view(route.method_name)
@@ -112,6 +120,7 @@ def resource(url_prefix_or_resource_cls, resource_cls=None, subresources=None):
     for subroute in reduce_routes(subresources):  # type: Route
         subroute = subroute.copy()
 
+        # can't have a subresource with a different blueprint than its parent
         bp_name = resource_cls.blueprint and resource_cls.blueprint.name
         if subroute.bp_name and (not bp_name or bp_name != subroute.bp_name):
             from warnings import warn
