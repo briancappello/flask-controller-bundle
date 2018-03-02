@@ -1,5 +1,5 @@
 from flask_unchained import AppBundle
 
 
-class EmptyBundle(AppBundle):
+class AutoRouteAppBundle(AppBundle):
     pass

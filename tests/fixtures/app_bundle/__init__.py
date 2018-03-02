@@ -1,6 +1,5 @@
-from flask_unchained import Bundle
+from flask_unchained import AppBundle as BaseAppBundle
 
 
-class AppBundle(Bundle):
-    app_bundle = True
+class AppBundle(BaseAppBundle):
     blueprint_names = ['one', 'two']

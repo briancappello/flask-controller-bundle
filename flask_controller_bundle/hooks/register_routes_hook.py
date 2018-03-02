@@ -1,7 +1,12 @@
-from flask import Flask
-from flask_unchained import AppFactoryHook, Bundle
+import importlib
+import inspect
 
-from ..routes import reduce_routes
+from flask import Flask
+from flask_unchained import AppFactoryHook, AppBundle, Bundle
+from typing import *
+
+from ..attr_constants import CONTROLLER_ROUTES_ATTR, FN_ROUTES_ATTR
+from ..routes import reduce_routes, _normalize_controller_routes, include
 
 
 class RegisterRoutesHook(AppFactoryHook):
@@ -14,6 +19,13 @@ class RegisterRoutesHook(AppFactoryHook):
     action_table_converter = lambda route: [route.full_rule,
                                             route.endpoint,
                                             route.full_name]
+
+    def run_hook(self, app: Flask, bundles):
+        app_bundle = bundles[-1]
+        routes_module = self.import_bundle_module(app_bundle)
+        routes = (self.get_explicit_routes(app_bundle) if routes_module
+                  else self.collect_from_bundle(app_bundle))
+        self.process_objects(app, routes)
 
     def process_objects(self, app: Flask, objects):
         for route in reduce_routes(objects):
@@ -28,14 +40,34 @@ class RegisterRoutesHook(AppFactoryHook):
                                  **route.rule_options)
                 self.log_action(route)
 
-    def collect_from_bundle(self, bundle: Bundle):
-        if not bundle.app_bundle:
-            return []
+    def get_explicit_routes(self, bundle: Type[Bundle]):
+        if not issubclass(bundle, AppBundle):
+            raise Exception('Can only get routes from the app bundle')
 
-        module = self.import_bundle_module(bundle)
+        routes_module = self.import_bundle_module(bundle)
         try:
-            return getattr(module, 'routes')
+            return getattr(routes_module, 'routes')
         except AttributeError:
             module_name = self.get_module_name(bundle)
             raise AttributeError(f'Could not find a variable named `routes` '
                                  f'in the {module_name} module!')
+
+    def collect_from_bundle(self, bundle: Bundle):
+        bundle_views_module_name = getattr(bundle, 'views_module_name', 'views')
+        views_module_name = f'{bundle.module_name}.{bundle_views_module_name}'
+        views_module = importlib.import_module(views_module_name)
+        views_module = importlib.reload(views_module)
+
+        for _, obj in inspect.getmembers(views_module, self.type_check):
+            if hasattr(obj, FN_ROUTES_ATTR):
+                yield getattr(obj, FN_ROUTES_ATTR)
+            else:
+                routes = getattr(obj, CONTROLLER_ROUTES_ATTR).values()
+                yield from _normalize_controller_routes(routes, obj)
+
+        yield from include(views_module_name)
+
+    def type_check(self, obj):
+        is_controller = hasattr(obj, CONTROLLER_ROUTES_ATTR)
+        is_view_fn = hasattr(obj, FN_ROUTES_ATTR)
+        return is_controller or is_view_fn

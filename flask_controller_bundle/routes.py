@@ -94,17 +94,16 @@ def func(rule_or_view_func: Union[str, Callable],
 
 def include(module_name: str,
             *,
-            attr: str='routes',
-            exclude: Optional[Endpoints]=None,
-            only: Optional[Endpoints]=None,
+            attr: str = 'routes',
+            exclude: Optional[Endpoints] = None,
+            only: Optional[Endpoints] = None,
             ) -> RouteGenerator:
     # because routes are generators, once they've been "drained", they can't be
     # used again. under normal end-user-app circumstances this reload probably
     # wouldn't be needed, but it's at least required for the tests to pass
-    reload_needed = module_name in sys.modules
+    if module_name in sys.modules:
+        del sys.modules[module_name]
     module = importlib.import_module(module_name)
-    if reload_needed:
-        importlib.reload(module)
 
     try:
         routes = reduce_routes(getattr(module, attr))
