@@ -1,7 +1,8 @@
 import functools
 import os
 
-from flask import redirect, render_template, request
+from flask import after_this_request, flash, redirect, render_template, request
+from flask import current_app as app
 
 from .metaclasses import ControllerMeta
 from .utils import controller_name, get_url, validate_redirect_url
@@ -26,13 +27,20 @@ class Controller(metaclass=ControllerMeta):
     decorators = None
     url_prefix = None
 
+    def flash(self, msg, category=None):
+        if app.config.get('FLASH_MESSAGES', True):
+            flash(msg, category)
+
     # modified from flask_security.utils.get_post_action_redirect
-    def redirect(self, where=None, override=None, **url_kwargs):
+    def redirect(self, where=None, default=None, override=None, **url_kwargs):
         urls = [get_url(request.args.get('next')),
                 get_url(request.form.get('next'))]
 
         if where:
             urls.append(get_url(where, _cls=self, **url_kwargs))
+
+        if default:
+            urls.append(get_url(default, _cls=self, **url_kwargs))
 
         if override:
             urls.insert(0, get_url(override, _cls=self, **url_kwargs))
@@ -85,3 +93,6 @@ class Controller(metaclass=ControllerMeta):
             view_func = decorator(view_func)
         functools.update_wrapper(view_func, original_view_func)
         return view_func
+
+    def after_this_request(self, fn):
+        after_this_request(fn)
