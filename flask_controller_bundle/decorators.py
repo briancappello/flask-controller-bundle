@@ -2,11 +2,7 @@ import functools
 import jinja2
 import markupsafe
 
-try:
-    from flask_di_bundle import di
-except ImportError:
-    di = None
-
+from flask_unchained import unchained
 from typing import Callable, Iterable, Optional, Union
 
 from .attr_constants import (
@@ -103,11 +99,11 @@ def template_test(arg: Optional[Callable]=None,
 
 
 def _inject(fn, inject_args):
-    if di is None or not inject_args:
+    if not inject_args:
         return fn
 
     inject_args = inject_args if isinstance(inject_args, Iterable) else []
-    return di.inject(*inject_args)(fn)
+    return unchained.inject(*inject_args)(fn)
 
 
 def _make_safe(fn):

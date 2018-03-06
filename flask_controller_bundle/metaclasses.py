@@ -1,3 +1,4 @@
+from flask_unchained import unchained
 from types import FunctionType
 
 from .attr_constants import (
@@ -23,6 +24,10 @@ class ControllerMeta(type):
             setattr(cls, REMOVE_SUFFIXES_ATTR, get_remove_suffixes(
                 name, bases, CONTROLLER_REMOVE_EXTRA_SUFFIXES))
             return cls
+
+        # set up dependency injection on subclass constructors
+        if '__init__' in clsdict:
+            cls.__init__ = unchained.inject()(clsdict['__init__'])
 
         controller_routes = getattr(cls, CONTROLLER_ROUTES_ATTR, {}).copy()
         not_views = deep_getattr({}, bases, NOT_VIEWS_ATTR)
