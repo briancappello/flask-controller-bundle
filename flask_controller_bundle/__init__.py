@@ -1,3 +1,4 @@
+from flask import Flask
 from flask_unchained import Bundle
 
 from .constants import (ALL_METHODS, INDEX_METHODS, MEMBER_METHODS,
@@ -10,4 +11,10 @@ from .routes import controller, func, include, prefix, resource, rule
 
 
 class FlaskControllerBundle(Bundle):
-    pass
+    @classmethod
+    def before_init_app(cls, app: Flask):
+        from .template_loader import (UnchainedJinjaEnvironment,
+                                      UnchainedJinjaLoader)
+        app.jinja_environment = UnchainedJinjaEnvironment
+        app.jinja_options = {**app.jinja_options,
+                             'loader': UnchainedJinjaLoader(app)}
