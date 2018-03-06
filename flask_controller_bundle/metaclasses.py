@@ -17,6 +17,16 @@ _missing = object()
 
 
 class ControllerMeta(type):
+    """
+    Metaclass for Controller class
+
+    Sets up automatic dependency injection and routes:
+    - if base class, remember utility methods (NOT_VIEWS_ATTR)
+    - if subclass of a base class, init CONTROLLER_ROUTES_ATTR
+        - check if methods were decorated with @route, otherwise
+          create a new Route for each method
+        - finish initializing routes (set blueprint, _controller_name)
+    """
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
         if ABSTRACT_ATTR in clsdict:
@@ -55,6 +65,17 @@ class ControllerMeta(type):
 
 
 class ResourceMeta(ControllerMeta):
+    """
+    Metaclass for Resource class
+
+    Sets up special rules for RESTful behavior:
+    - GET    '/' -> cls.index()
+    - POST   '/' -> cls.create()
+    - GET    '/<cls.member_param>' -> cls.get(<param_name>=<param_value>)
+    - PATCH  '/<cls.member_param>' -> cls.patch(<param_name>=<param_value>)
+    - PUT    '/<cls.member_param>' -> cls.put(<param_name>=<param_value>)
+    - DELETE '/<cls.member_param>' -> cls.delete(<param_name>=<param_value>)
+    """
     resource_methods = {INDEX: ['GET'], CREATE: ['POST'],
                         GET: ['GET'], PATCH: ['PATCH'],
                         PUT: ['PUT'], DELETE: ['DELETE']}
