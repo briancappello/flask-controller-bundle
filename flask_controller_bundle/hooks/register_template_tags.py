@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_unchained import AppFactoryHook
-from typing import Any, List, Tuple
+from typing import *
 
 from ..attr_constants import TEMPLATE_TAG_ATTR
 
@@ -15,10 +15,12 @@ class RegisterTemplateTags(AppFactoryHook):
     action_table_columns = ['name']
     action_table_converter = lambda fn: getattr(fn, TEMPLATE_TAG_ATTR)
 
-    def process_objects(self, app: Flask, tags: List[Tuple[str, Any]]):
-        for _, fn in tags:
-            tag_name = getattr(fn, TEMPLATE_TAG_ATTR)
-            app.jinja_env.globals[tag_name] = fn
+    def process_objects(self, app: Flask, tags: Dict[str, Any]):
+        for name, fn in tags.items():
+            app.jinja_env.globals[name] = fn
+
+    def key_name(self, name, obj):
+        return getattr(obj, TEMPLATE_TAG_ATTR)
 
     def type_check(self, obj):
         return hasattr(obj, TEMPLATE_TAG_ATTR)

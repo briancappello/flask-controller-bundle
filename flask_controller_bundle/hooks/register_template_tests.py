@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_unchained import AppFactoryHook
-from typing import Any, List, Tuple
+from typing import *
 
 from ..attr_constants import TEMPLATE_TEST_ATTR
 
@@ -15,10 +15,12 @@ class RegisterTemplateTests(AppFactoryHook):
     action_table_columns = ['name']
     action_table_converter = lambda fn: getattr(fn, TEMPLATE_TEST_ATTR)
 
-    def process_objects(self, app: Flask, tests: List[Tuple[str, Any]]):
-        for _, fn in tests:
-            test_name = getattr(fn, TEMPLATE_TEST_ATTR)
-            app.jinja_env.tests[test_name] = fn
+    def process_objects(self, app: Flask, tests: Dict[str, Any]):
+        for name, fn in tests.items():
+            app.jinja_env.tests[name] = fn
+
+    def key_name(self, name, obj):
+        return getattr(obj, TEMPLATE_TEST_ATTR)
 
     def type_check(self, obj):
         return hasattr(obj, TEMPLATE_TEST_ATTR)

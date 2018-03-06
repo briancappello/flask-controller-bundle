@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_unchained import AppFactoryHook
-from typing import Any, List, Tuple
+from typing import *
 
 from ..attr_constants import TEMPLATE_FILTER_ATTR
 
@@ -15,10 +15,12 @@ class RegisterTemplateFilters(AppFactoryHook):
     action_table_columns = ['name']
     action_table_converter = lambda fn: getattr(fn, TEMPLATE_FILTER_ATTR)
 
-    def process_objects(self, app: Flask, filters: List[Tuple[str, Any]]):
-        for _, fn in filters:
-            filter_name = getattr(fn, TEMPLATE_FILTER_ATTR)
-            app.jinja_env.filters[filter_name] = fn
+    def process_objects(self, app: Flask, filters: Dict[str, Any]):
+        for name, fn in filters.items():
+            app.jinja_env.filters[name] = fn
+
+    def key_name(self, name, obj):
+        return getattr(obj, TEMPLATE_FILTER_ATTR)
 
     def type_check(self, obj):
         return hasattr(obj, TEMPLATE_FILTER_ATTR)
