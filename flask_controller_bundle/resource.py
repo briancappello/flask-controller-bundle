@@ -1,4 +1,4 @@
-from flask_unchained.utils import pluralize
+from flask_unchained.string_utils import pluralize
 
 from .controller import Controller
 from .metaclasses import ResourceMeta
