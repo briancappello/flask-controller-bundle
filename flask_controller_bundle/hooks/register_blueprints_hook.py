@@ -14,6 +14,8 @@ class RegisterBlueprintsHook(AppFactoryHook):
     action_table_columns = ['name', 'url_prefix']
     action_table_converter = lambda bp: [bp.name, bp.url_prefix]
 
+    _limit_discovery_to_local_declarations = False
+
     def process_objects(self, app: Flask, blueprints: List[Blueprint]):
         for blueprint in reversed(blueprints):
             # rstrip '/' off url_prefix because views should be declaring their
