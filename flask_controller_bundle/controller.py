@@ -8,10 +8,6 @@ from .metaclasses import ControllerMeta
 from .utils import controller_name, get_url, validate_redirect_url
 
 
-METHOD_AS_VIEW_WRAPPER_ASSIGNMENTS = (set(functools.WRAPPER_ASSIGNMENTS)
-                                      .difference({'__qualname__'}))
-
-
 class TemplateFolderDescriptor:
     def __get__(self, instance, cls):
         return controller_name(cls)
@@ -71,8 +67,10 @@ class Controller(metaclass=ControllerMeta):
             self = view_func.view_class(*class_args, **class_kwargs)
             return self.dispatch_request(method_name, *args, **kwargs)
 
+        wrapper_assignments = (set(functools.WRAPPER_ASSIGNMENTS)
+                               .difference({'__qualname__'}))
         functools.update_wrapper(view_func, getattr(cls, method_name),
-                                 assigned=METHOD_AS_VIEW_WRAPPER_ASSIGNMENTS)
+                                 assigned=wrapper_assignments)
         view_func.view_class = cls
         return view_func
 
