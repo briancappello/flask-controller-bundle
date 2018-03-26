@@ -1,8 +1,9 @@
 import functools
 import os
 
-from flask import after_this_request, flash, redirect, render_template, request
-from flask import current_app as app
+from flask import (after_this_request, current_app as app, flash, jsonify,
+                   redirect, render_template, request)
+from http import HTTPStatus
 
 from .metaclasses import ControllerMeta
 from .utils import controller_name, get_url, validate_redirect_url
@@ -94,3 +95,9 @@ class Controller(metaclass=ControllerMeta):
 
     def after_this_request(self, fn):
         after_this_request(fn)
+
+    def jsonify(self, data, code=HTTPStatus.OK, headers=None):
+        return jsonify(data), code, headers or {}
+
+    def errors(self, errors, code=HTTPStatus.BAD_REQUEST, key='errors'):
+        return jsonify({key: errors}), code
