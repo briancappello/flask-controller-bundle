@@ -44,4 +44,9 @@ setup(
     },
     include_package_data=True,
     zip_safe=False,
+    entry_points={
+        'pytest11': [
+            'flask_controller_bundle = flask_controller_bundle.pytest',
+        ],
+    },
 )
