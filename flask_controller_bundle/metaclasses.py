@@ -45,6 +45,7 @@ class ControllerMeta(type):
         for method_name, method in clsdict.items():
             if (method_name in not_views
                     or not is_view_func(method_name, method)):
+                controller_routes.pop(method_name, None)
                 continue
 
             method_routes = getattr(method, FN_ROUTES_ATTR,
