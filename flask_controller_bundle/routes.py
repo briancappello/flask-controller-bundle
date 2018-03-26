@@ -185,16 +185,16 @@ def reduce_routes(routes: Iterable[Union[Route, RouteGenerator]],
 
 
 def rule(rule: str,
-         method_name_or_method: Union[str, Callable],
+         cls_method_name_or_view_fn: Optional[Union[str, Callable]] = None,
          *,
-         defaults: Optional[Defaults]=None,
-         endpoint: Optional[str]=None,
+         defaults: Optional[Defaults] = None,
+         endpoint: Optional[str] = None,
          is_member: Optional[bool]=False,
-         methods: Optional[Methods]=None,
-         only_if: Optional[Callable]=None,
+         methods: Optional[Methods] = None,
+         only_if: Optional[Callable] = None,
          **rule_options,
          ) -> RouteGenerator:
-    yield Route(rule, method_name_or_method, defaults=defaults,
+    yield Route(rule, cls_method_name_or_view_fn, defaults=defaults,
                 endpoint=endpoint, is_member=is_member, methods=methods,
                 only_if=only_if, **rule_options)
 

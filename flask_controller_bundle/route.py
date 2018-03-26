@@ -123,6 +123,9 @@ class Route:
 
     @property
     def full_name(self):
+        if not self.view_func:
+            return None
+
         prefix = self.view_func.__module__
         if self._controller_name:
             prefix = f'{prefix}.{self._controller_name}'
