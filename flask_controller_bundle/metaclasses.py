@@ -29,15 +29,16 @@ class ControllerMeta(type):
     """
     def __new__(mcs, name, bases, clsdict):
         cls = super().__new__(mcs, name, bases, clsdict)
+
+        # set up dependency injection on constructors
+        if '__init__' in clsdict:
+            cls.__init__ = unchained.inject()(clsdict['__init__'])
+
         if ABSTRACT_ATTR in clsdict:
             setattr(cls, NOT_VIEWS_ATTR, get_not_views(clsdict, bases))
             setattr(cls, REMOVE_SUFFIXES_ATTR, get_remove_suffixes(
                 name, bases, CONTROLLER_REMOVE_EXTRA_SUFFIXES))
             return cls
-
-        # set up dependency injection on subclass constructors
-        if '__init__' in clsdict:
-            cls.__init__ = unchained.inject()(clsdict['__init__'])
 
         controller_routes = getattr(cls, CONTROLLER_ROUTES_ATTR, {}).copy()
         not_views = deep_getattr({}, bases, NOT_VIEWS_ATTR)
