@@ -48,8 +48,7 @@ class TestRegisterRoutesHook:
                 assert route.view_func() == expected[endpoint]
 
             # check endpoints registered with app
-            all_in_app = set(app.view_functions.keys())
-            assert all_in_app.difference(set(expected.keys())) == {'static'}
+            assert set(app.view_functions.keys()) == set(expected.keys())
             for endpoint in expected:
                 view_func = app.view_functions[endpoint]
                 assert view_func() == expected[endpoint]
@@ -72,8 +71,7 @@ class TestRegisterRoutesHook:
                 assert route.view_func() == expected[endpoint]
 
             # check endpoints registered with app
-            all_in_app = set(app.view_functions.keys())
-            assert all_in_app.difference(set(expected.keys())) == {'static'}
+            assert set(app.view_functions.keys()) == set(expected.keys())
             for endpoint in expected:
                 view_func = app.view_functions[endpoint]
                 assert view_func() == expected[endpoint]

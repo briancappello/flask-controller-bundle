@@ -90,7 +90,7 @@ def method_name_to_url(method_name) -> str:
 
 
 # from flask_security.utils
-def validate_redirect_url(url):
+def _validate_redirect_url(url):
     if url is None or url.strip() == '':
         return False
     url_next = urlsplit(url)

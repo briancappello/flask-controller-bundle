@@ -6,7 +6,7 @@ from flask_controller_bundle import Controller, Resource
 from flask_controller_bundle.metaclasses import deep_getattr
 from flask_controller_bundle.utils import (
     controller_name, get_param_tuples, get_last_param_name, get_url,
-    join, method_name_to_url, validate_redirect_url)
+    join, method_name_to_url, _validate_redirect_url)
 
 
 def test_deep_getattr():
@@ -204,11 +204,11 @@ class TestMethodNameToUrl:
 
 class TestValidateRedirectUrl:
     def test_it_fails_on_garbage(self):
-        assert validate_redirect_url(None) is False
-        assert validate_redirect_url(' ') is False
+        assert _validate_redirect_url(None) is False
+        assert _validate_redirect_url(' ') is False
 
     def test_it_fails_with_invalid_netloc(self, app, monkeypatch):
         with app.test_request_context():
             monkeypatch.setattr('flask.request.host_url', 'http://example.com')
-            assert validate_redirect_url('http://fail.com') is False
+            assert _validate_redirect_url('http://fail.com') is False
             monkeypatch.undo()

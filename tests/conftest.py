@@ -1,31 +1,12 @@
-import os
 import pytest
 
-from collections import namedtuple
-
-from flask import Flask, template_rendered
+from flask_unchained import AppFactory, TEST
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def app():
-    template_folder = os.path.join(os.path.dirname(__file__), 'templates')
-    app = Flask('tests', template_folder=template_folder)
+    app = AppFactory.create_app(TEST)
     ctx = app.app_context()
     ctx.push()
     yield app
     ctx.pop()
-
-
-@pytest.fixture()
-def templates(app):
-    records = []
-    RenderedTemplate = namedtuple('RenderedTemplate', 'template context')
-
-    def record(sender, template, context, **extra):
-        records.append(RenderedTemplate(template, context))
-    template_rendered.connect(record, app)
-
-    try:
-        yield records
-    finally:
-        template_rendered.disconnect(record, app)
