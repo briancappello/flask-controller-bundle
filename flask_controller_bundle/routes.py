@@ -3,8 +3,7 @@ import inspect
 import sys
 
 from flask import Blueprint
-from typing import (Any, Callable, Dict, Generator, Iterable, List, Optional,
-                    Set, Tuple, Type, Union)
+from typing import *
 
 from .attr_constants import CONTROLLER_ROUTES_ATTR, FN_ROUTES_ATTR
 from .controller import Controller
@@ -15,7 +14,7 @@ from .utils import join, method_name_to_url
 Defaults = Dict[str, Any]
 Endpoints = Union[List[str], Tuple[str], Set[str]]
 Methods = Union[List[str], Tuple[str], Set[str]]
-RouteGenerator = Iterable[Route]  # FIXME RouteGenerator = Generator[Route] (??)
+RouteGenerator = Iterable[Route]
 
 
 _missing = object()
@@ -25,7 +24,7 @@ def missing_to_none(arg):
 
 
 def controller(url_prefix_or_controller_cls: Union[str, Type[Controller]],
-               controller_cls: Optional[Type[Controller]]=None,
+               controller_cls: Optional[Type[Controller]] = None,
                *,
                rules: Optional[Iterable[Union[Route, RouteGenerator]]] = None,
                ) -> RouteGenerator:
@@ -47,12 +46,12 @@ def controller(url_prefix_or_controller_cls: Union[str, Type[Controller]],
 
 
 def func(rule_or_view_func: Union[str, Callable],
-         view_func: Optional[Callable]=_missing,
-         blueprint: Optional[Blueprint]=_missing,
-         defaults: Optional[Defaults]=_missing,
-         endpoint: Optional[str]=_missing,
-         methods: Optional[Methods]=_missing,
-         only_if: Optional[Callable]=_missing,
+         view_func: Optional[Callable] = _missing,
+         blueprint: Optional[Blueprint] = _missing,
+         defaults: Optional[Defaults] = _missing,
+         endpoint: Optional[str] = _missing,
+         methods: Optional[Methods] = _missing,
+         only_if: Optional[Callable] = _missing,
          **rule_options,
          ) -> RouteGenerator:
     rule, view_func = _normalize_args(
@@ -133,10 +132,10 @@ def prefix(url_prefix: str,
 
 
 def resource(url_prefix_or_resource_cls: Union[str, Type[Resource]],
-             resource_cls: Optional[Type[Resource]]=None,
+             resource_cls: Optional[Type[Resource]] = None,
              *,
-             rules: Optional[Iterable[Union[Route, RouteGenerator]]]=None,
-             subresources: Optional[Iterable[RouteGenerator]]=None,
+             rules: Optional[Iterable[Union[Route, RouteGenerator]]] = None,
+             subresources: Optional[Iterable[RouteGenerator]] = None,
              ) -> RouteGenerator:
     url_prefix, resource_cls = _normalize_args(
         url_prefix_or_resource_cls, resource_cls, _is_resource_cls)
@@ -155,7 +154,7 @@ def resource(url_prefix_or_resource_cls: Union[str, Type[Resource]],
 
     yield from _normalize_controller_routes(routes.values(), resource_cls)
 
-    for subroute in reduce_routes(subresources):  # type: Route
+    for subroute in reduce_routes(subresources):
         subroute = subroute.copy()
 
         # can't have a subresource with a different blueprint than its parent
@@ -189,7 +188,7 @@ def rule(rule: str,
          *,
          defaults: Optional[Defaults] = None,
          endpoint: Optional[str] = None,
-         is_member: Optional[bool]=False,
+         is_member: Optional[bool] = False,
          methods: Optional[Methods] = None,
          only_if: Optional[Callable] = None,
          **rule_options,
