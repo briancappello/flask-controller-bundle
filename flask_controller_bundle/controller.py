@@ -6,7 +6,7 @@ from flask import (after_this_request, current_app as app, flash, jsonify,
 from http import HTTPStatus
 
 from .metaclasses import ControllerMeta
-from .utils import controller_name, get_url, validate_redirect_url
+from .utils import controller_name, redirect
 
 
 class TemplateFolderDescriptor:
@@ -25,27 +25,11 @@ class Controller(metaclass=ControllerMeta):
     url_prefix = None
 
     def flash(self, msg, category=None):
-        if app.config.get('FLASH_MESSAGES', True):
+        if not request.is_json and app.config.get('FLASH_MESSAGES', True):
             flash(msg, category)
 
-    # modified from flask_security.utils.get_post_action_redirect
     def redirect(self, where=None, default=None, override=None, **url_kwargs):
-        urls = [get_url(request.args.get('next')),
-                get_url(request.form.get('next'))]
-
-        if where:
-            urls.append(get_url(where, _cls=self, **url_kwargs))
-
-        if default:
-            urls.append(get_url(default, _cls=self, **url_kwargs))
-
-        if override:
-            urls.insert(0, get_url(override, _cls=self, **url_kwargs))
-
-        for url in urls:
-            if validate_redirect_url(url):
-                return redirect(url)
-        return redirect('/')
+        return redirect(where, default, override, _cls=self, **url_kwargs)
 
     def render(self, template_name, **ctx):
         if '.' not in template_name:
