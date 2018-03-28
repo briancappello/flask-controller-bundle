@@ -1,4 +1,5 @@
 from flask_unchained import unchained
+from flask_unchained.utils import deep_getattr
 from types import FunctionType
 
 from .attr_constants import (
@@ -12,8 +13,6 @@ from .utils import controller_name, join, get_param_tuples, method_name_to_url
 
 CONTROLLER_REMOVE_EXTRA_SUFFIXES = ['View']
 RESOURCE_REMOVE_EXTRA_SUFFIXES = ['MethodView']
-
-_missing = object()
 
 
 class ControllerMeta(type):
@@ -118,19 +117,6 @@ class ResourceMeta(ControllerMeta):
     def subresource_route_rule(cls, subresource_route: Route):
         rule = join(cls.url_prefix, cls.member_param, subresource_route.rule)
         return rename_parent_resource_param_name(cls, rule)
-
-
-def deep_getattr(clsdict, bases, name, default=_missing):
-    value = clsdict.get(name, _missing)
-    if value != _missing:
-        return value
-    for base in bases:
-        value = getattr(base, name, _missing)
-        if value != _missing:
-            return value
-    if default != _missing:
-        return default
-    raise AttributeError(name)
 
 
 def get_not_views(clsdict, bases):

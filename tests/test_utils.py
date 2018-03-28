@@ -3,10 +3,10 @@ import pytest
 from werkzeug.routing import BuildError
 
 from flask_controller_bundle import Controller, Resource
-from flask_controller_bundle.metaclasses import deep_getattr
 from flask_controller_bundle.utils import (
     controller_name, get_param_tuples, get_last_param_name, get_url,
     join, method_name_to_url, _validate_redirect_url)
+from flask_unchained.utils import deep_getattr
 
 
 def test_deep_getattr():
