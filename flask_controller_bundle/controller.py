@@ -2,7 +2,7 @@ import functools
 import os
 
 from flask import (after_this_request, current_app as app, flash, jsonify,
-                   redirect, render_template, request)
+                   render_template, request)
 from http import HTTPStatus
 
 from .metaclasses import ControllerMeta

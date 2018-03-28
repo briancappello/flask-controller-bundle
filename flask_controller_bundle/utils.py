@@ -45,7 +45,7 @@ def get_last_param_name(url_rule) -> Optional[str]:
 def get_url(endpoint_or_url_or_config_key: str,
             _cls: Optional[Union[object, type]] = None,
             _external_host: Optional[str] = None,
-            **url_kwargs: Dict[str, Any]
+            **url_kwargs,
             ) -> Union[str, None]:
     """
 
@@ -100,7 +100,7 @@ def join(*args, trailing_slash=False):
 
 
 def method_name_to_url(method_name) -> str:
-    return '/' + kebab_case(method_name)
+    return '/' + kebab_case(method_name).strip('-')
 
 
 # modified from flask_security.utils.get_post_action_redirect
@@ -109,7 +109,7 @@ def redirect(where: Optional[str] = None,
              override: Optional[str] = None,
              _cls: Optional[Union[object, type]] = None,
              _external_host: Optional[str] = None,
-             **url_kwargs: Dict[str, Any],
+             **url_kwargs,
              ) -> Response:
     """
     An improved version of flask's redirect function
@@ -147,7 +147,7 @@ def redirect(where: Optional[str] = None,
 
 def url_for(endpoint: str,
             _external_host: Optional[str] = None,
-            **url_kwargs: Dict[str, Any],
+            **url_kwargs,
             ) -> Union[str, None]:
     """
     The same as flask's url_for, except this also supports building external
