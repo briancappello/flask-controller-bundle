@@ -1,4 +1,4 @@
-from flask_unchained import unchained
+from flask_unchained.di import setup_class_dependency_injection
 from flask_unchained.utils import deep_getattr
 from types import FunctionType
 
@@ -27,11 +27,8 @@ class ControllerMeta(type):
         - finish initializing routes (set blueprint, _controller_name)
     """
     def __new__(mcs, name, bases, clsdict):
+        setup_class_dependency_injection(name, clsdict)
         cls = super().__new__(mcs, name, bases, clsdict)
-
-        # set up dependency injection on constructors
-        if '__init__' in clsdict:
-            cls.__init__ = unchained.inject()(clsdict['__init__'])
 
         if ABSTRACT_ATTR in clsdict:
             setattr(cls, NOT_VIEWS_ATTR, get_not_views(clsdict, bases))
