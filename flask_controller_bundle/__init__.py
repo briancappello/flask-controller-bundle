@@ -8,7 +8,7 @@ from .decorators import (
     no_route, route, template_filter, template_tag, template_test)
 from .resource import Resource
 from .routes import controller, func, include, prefix, resource, rule
-from .utils import get_url, redirect, url_for
+from .utils import redirect, url_for
 
 
 class FlaskControllerBundle(Bundle):

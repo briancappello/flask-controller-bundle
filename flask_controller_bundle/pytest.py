@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 from werkzeug.test import EnvironBuilder
 from werkzeug.utils import cached_property
 
-from .utils import get_url
+from .utils import url_for
 
 
 ENV_BUILDER_KWARGS = {name for name, param
@@ -25,10 +25,10 @@ def _process_test_client_args(args, kwargs):
     it would be necessary to use `url_for` in the same way as with FlaskClient)
     """
     endpoint_or_url_or_config_key = args and args[0]
-    get_url_kwargs = {}
+    url_for_kwargs = {}
     for kwarg_name in set(kwargs.keys()).difference(ENV_BUILDER_KWARGS):
-        get_url_kwargs[kwarg_name] = kwargs.pop(kwarg_name)
-    url = get_url(endpoint_or_url_or_config_key, **get_url_kwargs)
+        url_for_kwargs[kwarg_name] = kwargs.pop(kwarg_name)
+    url = url_for(endpoint_or_url_or_config_key, **url_for_kwargs)
     return (url, *args[1:]), kwargs
 
 

@@ -42,19 +42,36 @@ def get_last_param_name(url_rule) -> Optional[str]:
     return match.group('param_name') if match else None
 
 
-def get_url(endpoint_or_url_or_config_key: str,
+def url_for(endpoint_or_url_or_config_key: str,
+            _anchor: Optional[str] = None,
             _cls: Optional[Union[object, type]] = None,
+            _external: Optional[bool] = False,
             _external_host: Optional[str] = None,
-            **url_kwargs,
+            _method: Optional[str] = None,
+            _scheme: Optional[str] = None,
+            **values,
             ) -> Union[str, None]:
     """
+    An improved version of flask's url_for function
 
-    :param endpoint_or_url_or_config_key: variable name says it all
+    :param endpoint_or_url_or_config_key: what to lookup. it can be an endpoint
+      name, an app config key, or an already-formed url. if _cls is specified,
+      it also accepts a method name.
+    :param values: the variable arguments of the URL rule
+    :param _anchor: if provided this is added as anchor to the URL.
     :param _cls: if specified, can also pass a method name as the first argument
+    :param _external: if set to ``True``, an absolute URL is generated. Server
+      address can be changed via ``SERVER_NAME`` configuration variable which
+      defaults to `localhost`.
     :param _external_host: if specified, the host of an external server
         to generate urls for (eg https://example.com or localhost:8888)
-    :param url_kwargs: values to be passed along to flask's url_for
-    :return: a url path, or None
+    :param _method: if provided this explicitly specifies an HTTP method.
+    :param _scheme: a string specifying the desired URL scheme. The `_external`
+      parameter must be set to ``True`` or a :exc:`ValueError` is raised. The
+      default behavior uses the same scheme as the current request, or
+      ``PREFERRED_URL_SCHEME`` from the :ref:`app configuration <config>` if no
+      request context is available. As of Werkzeug 0.10, this also can be set
+      to an empty string to build protocol-relative URLs.
     """
     what = endpoint_or_url_or_config_key
 
@@ -66,14 +83,16 @@ def get_url(endpoint_or_url_or_config_key: str,
     if not what or '/' in what:
         return what
 
+    flask_url_for_kwargs = dict(_anchor=_anchor, _external=_external,
+                                _external_host=_external_host, _method=_method,
+                                _scheme=_scheme, **values)
+
     # check if it's a class method name, and try that endpoint
     if _cls and '.' not in what:
         controller_routes = getattr(_cls, CONTROLLER_ROUTES_ATTR)
         method_routes = controller_routes.get(what)
         try:
-            return url_for(method_routes[0].endpoint,
-                           _external_host=_external_host,
-                           **url_kwargs)
+            return _url_for(method_routes[0].endpoint, **flask_url_for_kwargs)
         except (
             BuildError,  # url not found
             IndexError,  # method_routes[0] is out-of-range
@@ -82,7 +101,7 @@ def get_url(endpoint_or_url_or_config_key: str,
             pass
 
     # what must be an endpoint
-    return url_for(what, _external_host=_external_host, **url_kwargs)
+    return _url_for(what, **flask_url_for_kwargs)
 
 
 def join(*args, trailing_slash=False):
@@ -107,37 +126,51 @@ def method_name_to_url(method_name) -> str:
 def redirect(where: Optional[str] = None,
              default: Optional[str] = None,
              override: Optional[str] = None,
+             _anchor: Optional[str] = None,
              _cls: Optional[Union[object, type]] = None,
+             _external: Optional[bool] = False,
              _external_host: Optional[str] = None,
-             **url_kwargs,
+             _method: Optional[str] = None,
+             _scheme: Optional[str] = None,
+             **values,
              ) -> Response:
     """
     An improved version of flask's redirect function
 
     :param where: A URL, endpoint, or config key name to redirect to
-    :param default: A URL, endpoint, or config key name to redirect to if where
-        is invalid
+    :param default: A URL, endpoint, or config key name to redirect to if
+      ``where`` is invalid
     :param override: explicitly redirect to a URL, endpoint, or config key name
-        (takes precedence over the 'next' value in query strings or forms)
+      (takes precedence over the ``next`` value in query strings or forms)
+    :param values: the variable arguments of the URL rule
+    :param _anchor: if provided this is added as anchor to the URL.
     :param _cls: if specified, allows a method name to be passed to where,
-        default, and/or override
-    :param _external_host: if specified, the host of an external server
-        to generate urls for (eg https://example.com or localhost:8888)
-    :param url_kwargs: values to be passed along to flask's url_for
-    :return:
+      default, and/or override
+    :param _external: if set to ``True``, an absolute URL is generated. Server
+      address can be changed via ``SERVER_NAME`` configuration variable which
+      defaults to `localhost`.
+    :param _external_host: if specified, the host of an external server to
+      generate urls for (eg https://example.com or localhost:8888)
+    :param _method: if provided this explicitly specifies an HTTP method.
+    :param _scheme: a string specifying the desired URL scheme. The `_external`
+      parameter must be set to ``True`` or a :exc:`ValueError` is raised. The
+      default behavior uses the same scheme as the current request, or
+      ``PREFERRED_URL_SCHEME`` from the :ref:`app configuration <config>` if no
+      request context is available. As of Werkzeug 0.10, this also can be set
+      to an empty string to build protocol-relative URLs.
     """
-    urls = [get_url(request.args.get('next')),
-            get_url(request.form.get('next'))]
+    flask_url_for_kwargs = dict(_anchor=_anchor, _external=_external,
+                                _external_host=_external_host, _method=_method,
+                                _scheme=_scheme, **values)
 
+    urls = [url_for(request.args.get('next'), **flask_url_for_kwargs),
+            url_for(request.form.get('next'), **flask_url_for_kwargs)]
     if where:
-        urls.append(get_url(where, _cls=_cls, _external_host=_external_host,
-                            **url_kwargs))
+        urls.append(url_for(where, _cls=_cls, **flask_url_for_kwargs))
     if default:
-        urls.append(get_url(default, _cls=_cls, _external_host=_external_host,
-                            **url_kwargs))
+        urls.append(url_for(default, _cls=_cls, **flask_url_for_kwargs))
     if override:
-        urls.insert(0, get_url(override, _cls=_cls,
-                               _external_host=_external_host, **url_kwargs))
+        urls.insert(0, url_for(override, _cls=_cls, **flask_url_for_kwargs))
 
     for url in urls:
         if _validate_redirect_url(url):
@@ -145,10 +178,7 @@ def redirect(where: Optional[str] = None,
     return flask_redirect('/')
 
 
-def url_for(endpoint: str,
-            _external_host: Optional[str] = None,
-            **url_kwargs,
-            ) -> Union[str, None]:
+def _url_for(endpoint: str, **values) -> Union[str, None]:
     """
     The same as flask's url_for, except this also supports building external
     urls for hosts that are different from app.config['SERVER_NAME']. One case
@@ -157,21 +187,19 @@ def url_for(endpoint: str,
     to generate urls to frontend routes
 
     :param endpoint: the name of the endpoint
-    :param _external_host: the host of an external server to generate
-        urls for (eg https://example.com or localhost:8888)
-    :param url_kwargs: any url parameter values needed to build the url
+    :param values: the variable arguments of the URL rule
     :return: a url path, or None
     """
-    external = bool(_external_host or url_kwargs.get('_external'))
-    external_host = (_external_host
-                        or app.config.get('EXTERNAL_SERVER_NAME'))
-    if not external or not external_host:
-        return flask_url_for(endpoint, **url_kwargs)
+    _external_host = values.pop('_external_host', None)
+    is_external = bool(_external_host or values.get('_external'))
+    external_host = (_external_host or app.config.get('EXTERNAL_SERVER_NAME'))
+    if not is_external or not external_host:
+        return flask_url_for(endpoint, **values)
 
     if '://' not in external_host:
         external_host = f'http://{external_host}'
-    url_kwargs.pop('_external')
-    return external_host.rstrip('/') + flask_url_for(endpoint, **url_kwargs)
+    values.pop('_external')
+    return external_host.rstrip('/') + flask_url_for(endpoint, **values)
 
 
 # from flask_security.utils

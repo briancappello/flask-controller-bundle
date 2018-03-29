@@ -4,8 +4,8 @@ from werkzeug.routing import BuildError
 
 from flask_controller_bundle import Controller, Resource
 from flask_controller_bundle.utils import (
-    controller_name, get_param_tuples, get_last_param_name, get_url,
-    join, method_name_to_url, _validate_redirect_url)
+    controller_name, get_param_tuples, get_last_param_name, join,
+    method_name_to_url, url_for, _validate_redirect_url)
 from flask_unchained.utils import deep_getattr
 
 
@@ -105,34 +105,34 @@ class TestGetLastParamName:
         assert get_last_param_name(path) == 'bazzes'
 
 
-class TestGetUrl:
+class TestUrlFor:
     def test_it_works_with_already_formed_path(self):
-        assert get_url('/foobar') == '/foobar'
+        assert url_for('/foobar') == '/foobar'
 
     def test_it_works_with_garbage(self):
-        assert get_url(None) is None
+        assert url_for(None) is None
 
     def test_it_works_with_config_keys_returning_path(self, app):
         app.config.from_mapping({'MY_KEY': '/my-key'})
-        assert get_url('MY_KEY') == '/my-key'
+        assert url_for('MY_KEY') == '/my-key'
 
     def test_it_works_with_config_keys_returning_endpoints(self, app):
         app.config.from_mapping({'MY_KEY': 'some.endpoint'})
 
         with pytest.raises(BuildError):
-            assert get_url('MY_KEY')
+            assert url_for('MY_KEY')
 
         with app.test_request_context():
             app.add_url_rule('/some-endpoint', endpoint='some.endpoint')
-            assert get_url('MY_KEY') == '/some-endpoint'
+            assert url_for('MY_KEY') == '/some-endpoint'
 
     def test_it_works_with_endpoints(self, app):
         with pytest.raises(BuildError):
-            assert get_url('some.endpoint')
+            assert url_for('some.endpoint')
 
         with app.test_request_context():
             app.add_url_rule('/some-endpoint', endpoint='some.endpoint')
-            assert get_url('some.endpoint') == '/some-endpoint'
+            assert url_for('some.endpoint') == '/some-endpoint'
 
     def test_it_works_with_controller_method_names(self, app):
         class SiteController(Controller):
@@ -141,7 +141,7 @@ class TestGetUrl:
 
         with app.test_request_context():
             app.add_url_rule('/about-us', endpoint='site_controller.about_us')
-            assert get_url('about_us', _cls=SiteController) == '/about-us'
+            assert url_for('about_us', _cls=SiteController) == '/about-us'
 
     def test_it_works_with_url_for_kwargs(self, app):
         class SiteResource(Resource):
@@ -150,10 +150,10 @@ class TestGetUrl:
 
         with app.test_request_context():
             app.add_url_rule('/sites/<int:id>', endpoint='site_resource.get')
-            assert get_url('get', id=1, _cls=SiteResource) == '/sites/1'
+            assert url_for('get', id=1, _cls=SiteResource) == '/sites/1'
 
             app.add_url_rule('/foo/<string:slug>', endpoint='some.endpoint')
-            assert get_url('some.endpoint', slug='hi') == '/foo/hi'
+            assert url_for('some.endpoint', slug='hi') == '/foo/hi'
 
     def test_it_falls_through_if_class_endpoint_not_found(self, app):
         class SiteResource(Resource):
@@ -163,7 +163,7 @@ class TestGetUrl:
         with app.test_request_context():
             app.add_url_rule('/sites/<int:id>', endpoint='site_resource.get')
             with pytest.raises(BuildError):
-                get_url('delete', id=1, _cls=SiteResource)
+                url_for('delete', id=1, _cls=SiteResource)
 
 
 class TestJoin:
