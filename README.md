@@ -1,3 +1,3 @@
 # Flask Controller Bundle
 
-Adds declarative routes and class-based views to Flask Unchained
+Adds class-based views and declarative routing to Flask Unchained
