@@ -19,3 +19,4 @@ class FlaskControllerBundle(Bundle):
         app.jinja_environment = UnchainedJinjaEnvironment
         app.jinja_options = {**app.jinja_options,
                              'loader': UnchainedJinjaLoader(app)}
+        app.jinja_env.globals['url_for'] = url_for
