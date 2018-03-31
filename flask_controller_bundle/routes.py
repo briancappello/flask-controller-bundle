@@ -2,7 +2,7 @@ import importlib
 import inspect
 import sys
 
-from flask import Blueprint
+from flask import Blueprint, Flask
 from typing import *
 
 from .attr_constants import CONTROLLER_ROUTES_ATTR, FN_ROUTES_ATTR
@@ -46,7 +46,7 @@ def func(rule_or_view_func: Union[str, Callable],
          defaults: Optional[Defaults] = _missing,
          endpoint: Optional[str] = _missing,
          methods: Optional[Methods] = _missing,
-         only_if: Optional[Callable] = _missing,
+         only_if: Optional[Union[bool, Callable[[Flask], bool]]] = _missing,
          **rule_options,
          ) -> RouteGenerator:
     rule, view_func = _normalize_args(
@@ -185,7 +185,7 @@ def rule(rule: str,
          endpoint: Optional[str] = _missing,
          is_member: Optional[bool] = _missing,
          methods: Optional[Methods] = _missing,
-         only_if: Optional[Callable] = _missing,
+         only_if: Optional[Union[bool, Callable[[Flask], bool]]] = _missing,
          **rule_options,
          ) -> RouteGenerator:
     yield Route(rule, cls_method_name_or_view_fn, defaults=defaults,
