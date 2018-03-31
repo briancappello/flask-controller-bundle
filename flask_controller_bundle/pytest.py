@@ -26,7 +26,7 @@ def _process_test_client_args(args, kwargs):
     """
     endpoint_or_url_or_config_key = args and args[0]
     url_for_kwargs = {}
-    for kwarg_name in set(kwargs.keys()).difference(ENV_BUILDER_KWARGS):
+    for kwarg_name in (set(kwargs) - ENV_BUILDER_KWARGS):
         url_for_kwargs[kwarg_name] = kwargs.pop(kwarg_name)
     url = url_for(endpoint_or_url_or_config_key, **url_for_kwargs)
     return (url, *args[1:]), kwargs
@@ -96,4 +96,3 @@ def templates(app):
         yield records
     finally:
         template_rendered.disconnect(record, app)
-
