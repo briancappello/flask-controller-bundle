@@ -212,3 +212,18 @@ class TestValidateRedirectUrl:
             monkeypatch.setattr('flask.request.host_url', 'http://example.com')
             assert _validate_redirect_url('http://fail.com') is False
             monkeypatch.undo()
+
+    @pytest.mark.options(EXTERNAL_SERVER_NAME='works.com')
+    def test_it_works_with_external_server_name(self, app, monkeypatch):
+        with app.test_request_context():
+            monkeypatch.setattr('flask.request.host_url', 'http://example.com')
+            assert _validate_redirect_url('http://works.com') is True
+            monkeypatch.undo()
+
+    def test_it_works_with_explicit_external_host(self, app, monkeypatch):
+        with app.test_request_context():
+            monkeypatch.setattr('flask.request.host_url', 'http://example.com')
+            result = _validate_redirect_url('http://works.com',
+                                            _external_host='works.com')
+            assert result is True
+            monkeypatch.undo()

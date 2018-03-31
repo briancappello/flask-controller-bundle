@@ -173,7 +173,7 @@ def redirect(where: Optional[str] = None,
         urls.insert(0, url_for(override, _cls=_cls, **flask_url_for_kwargs))
 
     for url in urls:
-        if _validate_redirect_url(url):
+        if _validate_redirect_url(url, _external_host):
             return flask_redirect(url)
     return flask_redirect('/')
 
@@ -202,13 +202,15 @@ def _url_for(endpoint: str, **values) -> Union[str, None]:
     return external_host.rstrip('/') + flask_url_for(endpoint, **values)
 
 
-# from flask_security.utils
-def _validate_redirect_url(url):
+# modified from flask_security.utils.validate_redirect_url
+def _validate_redirect_url(url, _external_host=None):
     if url is None or url.strip() == '':
         return False
     url_next = urlsplit(url)
     url_base = urlsplit(request.host_url)
-    if (url_next.netloc or url_next.scheme) and \
-            url_next.netloc != url_base.netloc:
+    external_host = _external_host or app.config.get('EXTERNAL_SERVER_NAME') or ''
+    if ((url_next.netloc or url_next.scheme)
+            and url_next.netloc != url_base.netloc
+            and url_next.netloc not in external_host):
         return False
     return True
