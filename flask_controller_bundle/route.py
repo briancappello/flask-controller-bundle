@@ -1,6 +1,6 @@
 from flask_unchained.string_utils import snake_case
 
-from .utils import join, method_name_to_url
+from .utils import join, method_name_to_url, _missing_to_default
 
 
 # FIXME should refactor this into Route and ControllerRoute(Route)
@@ -66,7 +66,7 @@ class Route:
 
     @defaults.setter
     def defaults(self, defaults):
-        self.rule_options['defaults'] = defaults
+        self.rule_options['defaults'] = _missing_to_default(defaults)
 
     @property
     def endpoint(self):
@@ -96,7 +96,7 @@ class Route:
 
     @methods.setter
     def methods(self, methods):
-        self.rule_options['methods'] = methods
+        self.rule_options['methods'] = _missing_to_default(methods, ['GET'])
 
     @property
     def rule(self):

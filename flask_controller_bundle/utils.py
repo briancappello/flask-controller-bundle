@@ -14,6 +14,7 @@ from werkzeug.local import LocalProxy
 from werkzeug.routing import BuildError
 
 from .attr_constants import CONTROLLER_ROUTES_ATTR, REMOVE_SUFFIXES_ATTR
+from .constants import _missing
 
 
 PARAM_NAME_RE = re.compile(r'<(\w+:)?(?P<param_name>\w+)>')
@@ -180,6 +181,10 @@ def redirect(where: Optional[str] = None,
         if _validate_redirect_url(url, _external_host):
             return flask_redirect(url)
     return flask_redirect('/')
+
+
+def _missing_to_default(arg, default=None):
+    return arg if arg is not _missing else default
 
 
 def _url_for(endpoint: str, **values) -> Union[str, None]:

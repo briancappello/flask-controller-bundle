@@ -6,21 +6,16 @@ from flask import Blueprint
 from typing import *
 
 from .attr_constants import CONTROLLER_ROUTES_ATTR, FN_ROUTES_ATTR
+from .constants import _missing
 from .controller import Controller
 from .resource import Resource
 from .route import Route
-from .utils import join, method_name_to_url
+from .utils import join, method_name_to_url, _missing_to_default
 
 Defaults = Dict[str, Any]
 Endpoints = Union[List[str], Tuple[str], Set[str]]
 Methods = Union[List[str], Tuple[str], Set[str]]
 RouteGenerator = Iterable[Route]
-
-
-_missing = object()
-
-def missing_to_none(arg):
-    return None if arg == _missing else arg
 
 
 def controller(url_prefix_or_controller_cls: Union[str, Type[Controller]],
@@ -83,11 +78,11 @@ def func(rule_or_view_func: Union[str, Callable],
         yield route
     else:
         yield Route(rule, view_func,
-                    blueprint=missing_to_none(blueprint),
-                    defaults=missing_to_none(defaults),
-                    endpoint=missing_to_none(endpoint),
-                    methods=missing_to_none(methods),
-                    only_if=missing_to_none(only_if),
+                    blueprint=_missing_to_default(blueprint),
+                    defaults=_missing_to_default(defaults),
+                    endpoint=_missing_to_default(endpoint),
+                    methods=_missing_to_default(methods),
+                    only_if=_missing_to_default(only_if),
                     **rule_options)
 
 
@@ -186,11 +181,11 @@ def reduce_routes(routes: Iterable[Union[Route, RouteGenerator]],
 def rule(rule: str,
          cls_method_name_or_view_fn: Optional[Union[str, Callable]] = None,
          *,
-         defaults: Optional[Defaults] = None,
-         endpoint: Optional[str] = None,
-         is_member: Optional[bool] = False,
-         methods: Optional[Methods] = None,
-         only_if: Optional[Callable] = None,
+         defaults: Optional[Defaults] = _missing,
+         endpoint: Optional[str] = _missing,
+         is_member: Optional[bool] = _missing,
+         methods: Optional[Methods] = _missing,
+         only_if: Optional[Callable] = _missing,
          **rule_options,
          ) -> RouteGenerator:
     yield Route(rule, cls_method_name_or_view_fn, defaults=defaults,
