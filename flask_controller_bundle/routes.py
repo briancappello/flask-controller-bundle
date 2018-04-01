@@ -10,7 +10,7 @@ from .constants import _missing
 from .controller import Controller
 from .resource import Resource
 from .route import Route
-from .utils import join, method_name_to_url, _missing_to_default
+from .utils import join, method_name_to_url
 
 Defaults = Dict[str, Any]
 Endpoints = Union[List[str], Tuple[str], Set[str]]
@@ -52,38 +52,23 @@ def func(rule_or_view_func: Union[str, Callable],
     rule, view_func = _normalize_args(
         rule_or_view_func, view_func, _is_view_func)
 
-    routes = getattr(view_func, FN_ROUTES_ATTR, [])
-    routes_by_rule = {route.rule: route for route in routes}
-    lookup_rule = (rule if isinstance(rule, str)
-                   else method_name_to_url(view_func.__name__))
-    existing_route = (routes[0] if len(routes) == 1
-                      else routes_by_rule.get(lookup_rule, None))
+    route = Route(rule, view_func, blueprint=blueprint, defaults=defaults,
+                  endpoint=endpoint, methods=methods, only_if=only_if,
+                  **rule_options)
 
-    if existing_route:
-        # we only want to override options if they were explicitly passed
-        route = existing_route.copy()
-        if isinstance(rule, str):
-            route.rule = rule
-        if blueprint is not _missing:
-            route.blueprint = blueprint
-        if endpoint is not _missing:
-            route.endpoint = endpoint
-        if defaults is not _missing:
-            route.defaults = defaults
-        if methods is not _missing:
-            route.methods = methods
-        if only_if is not _missing:
-            route.only_if = only_if
-        route.rule_options.update(rule_options)
+    existing_routes = getattr(view_func, FN_ROUTES_ATTR, [])
+    if len(existing_routes) == 1:
+        existing_route = existing_routes[0]
+    else:
+        routes_by_rule = {route.rule: route for route in existing_routes}
+        lookup_rule = (rule if isinstance(rule, str)
+                       else method_name_to_url(view_func.__name__))
+        existing_route = routes_by_rule.get(lookup_rule, None)
+
+    if not existing_route:
         yield route
     else:
-        yield Route(rule, view_func,
-                    blueprint=_missing_to_default(blueprint),
-                    defaults=_missing_to_default(defaults),
-                    endpoint=_missing_to_default(endpoint),
-                    methods=_missing_to_default(methods),
-                    only_if=_missing_to_default(only_if),
-                    **rule_options)
+        yield _inherit_route_options(route, existing_route)
 
 
 def include(module_name: str,
@@ -191,6 +176,23 @@ def rule(rule: str,
     yield Route(rule, cls_method_name_or_view_fn, defaults=defaults,
                 endpoint=endpoint, is_member=is_member, methods=methods,
                 only_if=only_if, **rule_options)
+
+
+def _inherit_route_options(parent: Route, child: Route):
+    if parent._blueprint is _missing:
+        parent.blueprint = child.blueprint
+    if parent._defaults is _missing:
+        parent.defaults = child.defaults
+    if parent._endpoint is _missing:
+        parent.endpoint = child.endpoint
+    if parent._is_member is _missing:
+        parent.is_member = child.is_member
+    if parent._methods is _missing:
+        parent.methods = child.methods
+    if parent._only_if is _missing:
+        parent.only_if = child.only_if
+    parent.rule_options = {**child.rule_options, **parent.rule_options}
+    return parent
 
 
 def _is_controller_cls(controller_cls, has_rule):

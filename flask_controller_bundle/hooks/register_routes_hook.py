@@ -27,15 +27,17 @@ class RegisterRoutesHook(AppFactoryHook):
                   else self.collect_from_bundle(app_bundle))
         self.process_objects(app, routes)
 
-    def process_objects(self, app: Flask, objects):
-        for route in reduce_routes(objects):
+    def process_objects(self, app: Flask, routes):
+        for route in reduce_routes(routes):
             # FIXME maybe validate routes first? (eg for duplicates?)
             # Flask doesn't complain; it will match the first route found,
             # but maybe we should at least warn the user?
             if route.should_register(app):
                 self.store.endpoints[route.endpoint] = route
                 app.add_url_rule(route.full_rule,
+                                 defaults=route.defaults,
                                  endpoint=route.endpoint,
+                                 methods=route.methods,
                                  view_func=route.view_func,
                                  **route.rule_options)
                 self.log_action(route)
@@ -52,7 +54,7 @@ class RegisterRoutesHook(AppFactoryHook):
             raise AttributeError(f'Could not find a variable named `routes` '
                                  f'in the {module_name} module!')
 
-    def collect_from_bundle(self, bundle: Bundle):
+    def collect_from_bundle(self, bundle: Type[Bundle]):
         bundle_views_module_name = getattr(bundle, 'views_module_name', 'views')
         views_module_name = f'{bundle.module_name}.{bundle_views_module_name}'
         views_module = importlib.import_module(views_module_name)

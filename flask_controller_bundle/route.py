@@ -1,10 +1,8 @@
 from flask_unchained.string_utils import snake_case
 
-from .utils import join, method_name_to_url, _missing_to_default
+from .constants import _missing
+from .utils import join, method_name_to_url
 
-
-# FIXME should refactor this into Route and ControllerRoute(Route)
-# would make it much easier to reason about, do state validation
 
 class Route:
     """
@@ -28,15 +26,15 @@ class Route:
     def __init__(self, rule, view_func, blueprint=None, defaults=None,
                  endpoint=None, is_member=False, methods=None, only_if=None,
                  **rule_options):
+        self._blueprint = blueprint
+        self._defaults = defaults
+        self._endpoint = endpoint
+        self._is_member = is_member
+        self._methods = methods
+        self._only_if = only_if
         self._rule = rule
         self.rule_options = rule_options
         self.view_func = view_func
-        self.blueprint = blueprint
-        self.defaults = defaults
-        self._endpoint = endpoint
-        self.is_member = is_member
-        self.methods = methods
-        self.only_if = only_if
 
         # extra private (should only be used by controller metaclasses)
         self._controller_name = None
@@ -47,6 +45,16 @@ class Route:
         elif callable(self.only_if):
             return self.only_if(app)
         return bool(self.only_if)
+
+    @property
+    def blueprint(self):
+        if self._blueprint is _missing:
+            return None
+        return self._blueprint
+
+    @blueprint.setter
+    def blueprint(self, blueprint):
+        self._blueprint = blueprint
 
     @property
     def bp_prefix(self):
@@ -62,11 +70,13 @@ class Route:
 
     @property
     def defaults(self):
-        return self.rule_options['defaults']
+        if self._defaults is _missing:
+            return None
+        return self._defaults
 
     @defaults.setter
     def defaults(self, defaults):
-        self.rule_options['defaults'] = _missing_to_default(defaults)
+        self._defaults = defaults
 
     @property
     def endpoint(self):
@@ -84,6 +94,16 @@ class Route:
         self._endpoint = endpoint
 
     @property
+    def is_member(self):
+        if self._is_member is _missing:
+            return False
+        return self._is_member
+
+    @is_member.setter
+    def is_member(self, is_member):
+        self._is_member = is_member
+
+    @property
     def method_name(self):
         if isinstance(self.view_func, str):
             return self.view_func
@@ -91,12 +111,21 @@ class Route:
 
     @property
     def methods(self):
-        return getattr(self.view_func, 'methods',
-                       self.rule_options.get('methods')) or ['GET']
+        return getattr(self.view_func, 'methods', self._methods) or ['GET']
 
     @methods.setter
     def methods(self, methods):
-        self.rule_options['methods'] = _missing_to_default(methods, ['GET'])
+        self._methods = methods
+
+    @property
+    def only_if(self):
+        if self._only_if is _missing:
+            return None
+        return self._only_if
+
+    @only_if.setter
+    def only_if(self, only_if):
+        self._only_if = only_if
 
     @property
     def rule(self):
