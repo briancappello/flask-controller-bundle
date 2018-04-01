@@ -71,6 +71,21 @@ def func(rule_or_view_func: Union[str, Callable],
         yield _inherit_route_options(route, existing_route)
 
 
+def get(rule: str,
+        cls_method_name_or_view_fn: Optional[Union[str, Callable]] = None,
+        *,
+        defaults: Optional[Defaults] = _missing,
+        endpoint: Optional[str] = _missing,
+        is_member: Optional[bool] = _missing,
+        only_if: Optional[Union[bool, Callable[[Flask], bool]]] = _missing,
+        **rule_options,
+        ) -> RouteGenerator:
+    rule_options.pop('methods', None)
+    yield Route(rule, cls_method_name_or_view_fn, defaults=defaults,
+                endpoint=endpoint, is_member=is_member, methods=['GET'],
+                only_if=only_if, **rule_options)
+
+
 def include(module_name: str,
             *,
             attr: str = 'routes',
@@ -102,6 +117,36 @@ def include(module_name: str,
             yield route
 
 
+def patch(rule: str,
+          cls_method_name_or_view_fn: Optional[Union[str, Callable]] = None,
+          *,
+          defaults: Optional[Defaults] = _missing,
+          endpoint: Optional[str] = _missing,
+          is_member: Optional[bool] = _missing,
+          only_if: Optional[Union[bool, Callable[[Flask], bool]]] = _missing,
+          **rule_options,
+          ) -> RouteGenerator:
+    rule_options.pop('methods', None)
+    yield Route(rule, cls_method_name_or_view_fn, defaults=defaults,
+                endpoint=endpoint, is_member=is_member, methods=['PATCH'],
+                only_if=only_if, **rule_options)
+
+
+def post(rule: str,
+         cls_method_name_or_view_fn: Optional[Union[str, Callable]] = None,
+         *,
+         defaults: Optional[Defaults] = _missing,
+         endpoint: Optional[str] = _missing,
+         is_member: Optional[bool] = _missing,
+         only_if: Optional[Union[bool, Callable[[Flask], bool]]] = _missing,
+         **rule_options,
+         ) -> RouteGenerator:
+    rule_options.pop('methods', None)
+    yield Route(rule, cls_method_name_or_view_fn, defaults=defaults,
+                endpoint=endpoint, is_member=is_member, methods=['POST'],
+                only_if=only_if, **rule_options)
+
+
 def prefix(url_prefix: str,
            children: Iterable[Union[Route, RouteGenerator]],
            ) -> RouteGenerator:
@@ -109,6 +154,21 @@ def prefix(url_prefix: str,
         route = route.copy()
         route.rule = join(url_prefix, route.rule)
         yield route
+
+
+def put(rule: str,
+        cls_method_name_or_view_fn: Optional[Union[str, Callable]] = None,
+        *,
+        defaults: Optional[Defaults] = _missing,
+        endpoint: Optional[str] = _missing,
+        is_member: Optional[bool] = _missing,
+        only_if: Optional[Union[bool, Callable[[Flask], bool]]] = _missing,
+        **rule_options,
+        ) -> RouteGenerator:
+    rule_options.pop('methods', None)
+    yield Route(rule, cls_method_name_or_view_fn, defaults=defaults,
+                endpoint=endpoint, is_member=is_member, methods=['PUT'],
+                only_if=only_if, **rule_options)
 
 
 def resource(url_prefix_or_resource_cls: Union[str, Type[Resource]],
