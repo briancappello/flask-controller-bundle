@@ -32,12 +32,12 @@ class _FakeBlueprint(_PackageBoundObject):
         return f'<BundleBlueprint "{self.name}">'
 
 
-class RegisterTemplateFoldersHook(AppFactoryHook):
-    name = 'template_folders'
-    priority = 24
+class RegisterBundleTemplateFoldersHook(AppFactoryHook):
+    name = 'bundle_template_folders'
+    run_before = ['blueprints']
 
-    bundle_module_name = 'views'
-    bundle_override_module_name_attr = 'views_module_name'
+    # bundle_module_name = 'views'
+    # bundle_override_module_name_attr = 'views_module_name'
 
     action_category = 'template_folders'
     action_table_columns = ['name', 'folder']
