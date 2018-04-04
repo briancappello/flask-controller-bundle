@@ -32,8 +32,17 @@ def controller(url_prefix_or_controller_cls: Union[str, Type[Controller]],
     if url_prefix:
         controller_cls.url_prefix = url_prefix
 
-    routes = (rules if rules is not None
-              else getattr(controller_cls, CONTROLLER_ROUTES_ATTR).values())
+    routes = []
+    controller_routes = getattr(controller_cls, CONTROLLER_ROUTES_ATTR)
+    if rules is None:
+        routes = controller_routes.values()
+    else:
+        for route in reduce_routes(rules):
+            existing = controller_routes.get(route.method_name)
+            if existing:
+                routes.append(_inherit_route_options(route, existing[0]))
+            else:
+                routes.append(route)
 
     yield from _normalize_controller_routes(routes, controller_cls)
 
