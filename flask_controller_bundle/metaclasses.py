@@ -6,7 +6,7 @@ from .attr_constants import (
     ABSTRACT_ATTR, CONTROLLER_ROUTES_ATTR, FN_ROUTES_ATTR, NO_ROUTES_ATTR,
     NOT_VIEWS_ATTR, REMOVE_SUFFIXES_ATTR)
 from .constants import (
-    ALL_METHODS, INDEX_METHODS, CREATE, DELETE, GET, INDEX, PATCH, PUT)
+    ALL_METHODS, INDEX_METHODS, CREATE, DELETE, GET, LIST, PATCH, PUT)
 from .route import Route
 from .utils import controller_name, join, get_param_tuples, method_name_to_url
 
@@ -67,14 +67,14 @@ class ResourceMeta(ControllerMeta):
     Metaclass for Resource class
 
     Sets up special rules for RESTful behavior:
-    - GET    '/' -> cls.index()
+    - GET    '/' -> cls.list()
     - POST   '/' -> cls.create()
     - GET    '/<cls.member_param>' -> cls.get(<param_name>=<param_value>)
     - PATCH  '/<cls.member_param>' -> cls.patch(<param_name>=<param_value>)
     - PUT    '/<cls.member_param>' -> cls.put(<param_name>=<param_value>)
     - DELETE '/<cls.member_param>' -> cls.delete(<param_name>=<param_value>)
     """
-    resource_methods = {INDEX: ['GET'], CREATE: ['POST'],
+    resource_methods = {LIST: ['GET'], CREATE: ['POST'],
                         GET: ['GET'], PATCH: ['PATCH'],
                         PUT: ['PUT'], DELETE: ['DELETE']}
 

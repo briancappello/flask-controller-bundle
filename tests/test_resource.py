@@ -4,7 +4,7 @@ from flask_controller_bundle.constants import ALL_METHODS
 
 
 class DefaultResource(Resource):
-    def index(self):
+    def list(self):
         pass
 
     def create(self):
@@ -44,8 +44,8 @@ class TestResource:
             view = DefaultResource.method_as_view(method_name)
             assert view.methods == DefaultResource.resource_methods[method_name]
 
-        index = DefaultResource.method_as_view('index')
-        assert index.methods == ['GET']
+        list = DefaultResource.method_as_view('list')
+        assert list.methods == ['GET']
 
         create = DefaultResource.method_as_view('create')
         assert create.methods == ['POST']
@@ -103,7 +103,7 @@ class TestResource:
 
     def test_route_rule_with_resource_methods(self):
         routes = getattr(DefaultResource, CONTROLLER_ROUTES_ATTR)
-        assert DefaultResource.route_rule(routes['index'][0]) == '/defaults'
+        assert DefaultResource.route_rule(routes['list'][0]) == '/defaults'
         assert DefaultResource.route_rule(routes['create'][0]) == '/defaults'
         assert DefaultResource.route_rule(routes['get'][0]) == '/defaults/<int:id>'
         assert DefaultResource.route_rule(routes['patch'][0]) == '/defaults/<int:id>'

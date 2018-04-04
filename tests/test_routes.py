@@ -46,7 +46,7 @@ class SiteController(Controller):
 
 
 class UserResource(Resource):
-    def index(self):
+    def list(self):
         pass
 
     def get(self, id):
@@ -54,7 +54,7 @@ class UserResource(Resource):
 
 
 class RoleResource(Resource):
-    def index(self):
+    def list(self):
         pass
 
     def get(self, id):
@@ -219,7 +219,7 @@ class TestResource:
     def test_it_works_with_only_resource(self):
         routes = list(resource(UserResource))
         assert len(routes) == 2
-        assert routes[0].endpoint == 'user_resource.index'
+        assert routes[0].endpoint == 'user_resource.list'
         assert routes[0].rule == '/users'
         assert routes[1].endpoint == 'user_resource.get'
         assert routes[1].rule == '/users/<int:id>'
@@ -227,7 +227,7 @@ class TestResource:
     def test_it_works_with_a_prefix(self):
         routes = list(resource('/prefix', UserResource))
         assert len(routes) == 2
-        assert routes[0].endpoint == 'user_resource.index'
+        assert routes[0].endpoint == 'user_resource.list'
         assert routes[0].rule == '/prefix'
         assert routes[1].endpoint == 'user_resource.get'
         assert routes[1].rule == '/prefix/<int:id>'
@@ -271,13 +271,13 @@ class TestResource:
         class UserResource(Resource):
             blueprint = None
 
-            def index(self):
+            def list(self):
                 pass
 
         class RoleResource(Resource):
             blueprint = bp
 
-            def index(self):
+            def list(self):
                 pass
 
         with pytest.warns(None) as warnings:
@@ -291,13 +291,13 @@ class TestResource:
         class UserResource(Resource):
             blueprint = bp
 
-            def index(self):
+            def list(self):
                 pass
 
         class RoleResource(Resource):
             blueprint = bp2
 
-            def index(self):
+            def list(self):
                 pass
 
         with pytest.warns(None) as warnings:

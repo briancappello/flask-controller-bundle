@@ -65,8 +65,8 @@ class ProductController(Controller):
 
 
 class UserResource(Resource):
-    def index(self):
-        return self.render('index')
+    def list(self):
+        return self.render('list')
 
     def create(self):
         return self.redirect('get', id=1)
@@ -88,8 +88,8 @@ class UserResource(Resource):
 
 
 class RoleResource(Resource):
-    def index(self):
-        return self.render('index')
+    def list(self):
+        return self.render('list')
 
     def create(self):
         return self.redirect('get', id=1)
@@ -110,8 +110,8 @@ class RoleResource(Resource):
 class AnotherResource(Resource):
     url_prefix = 'another'
 
-    def index(self):
-        return self.render('index')
+    def list(self):
+        return self.render('list')
 
     def get(self, id):
         return self.render('get', id=id)
