@@ -6,10 +6,9 @@ from ..attr_constants import TEMPLATE_TEST_ATTR
 
 
 class RegisterTemplateTests(AppFactoryHook):
-    name = 'template_tests'
-    priority = 30
-
     bundle_module_name = 'templates.tests'
+    bundle_override_module_name_attr = 'template_tests_module_name'
+    name = 'template_tests'
 
     action_category = 'template_tests'
     action_table_columns = ['name']

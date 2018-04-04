@@ -33,11 +33,9 @@ class _FakeBlueprint(_PackageBoundObject):
 
 
 class RegisterBundleTemplateFoldersHook(AppFactoryHook):
+    bundle_module_name = None
     name = 'bundle_template_folders'
     run_before = ['blueprints']
-
-    # bundle_module_name = 'views'
-    # bundle_override_module_name_attr = 'views_module_name'
 
     action_category = 'template_folders'
     action_table_columns = ['name', 'folder']

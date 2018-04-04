@@ -5,19 +5,10 @@ from typing import *
 from ..attr_constants import REQUEST_HOOK_TYPE
 
 
-flask_attrs = {
-    'before_request': 'before_request_funcs',
-    'before_first_request': 'before_first_request_funcs',
-    'after_request': '_funcs',
-    'teardown_request': '_funcs',
-}
-
-
 class RegisterRequestHooks(AppFactoryHook):
-    name = 'request_hooks'
-    priority = 30
-
     bundle_module_name = 'request_hooks'
+    name = 'request_hooks'
+    run_after = ['blueprints']
 
     action_table_columns = ['name', 'hook_type']
     action_table_converter = lambda fn: [fn.__name__,

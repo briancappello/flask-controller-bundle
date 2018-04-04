@@ -4,11 +4,10 @@ from typing import *
 
 
 class RegisterBlueprintsHook(AppFactoryHook):
-    name = 'blueprints'
-    priority = 25
-
     bundle_module_name = 'views'
     bundle_override_module_name_attr = 'views_module_name'
+    name = 'blueprints'
+    run_after = ['bundle_template_folders']
 
     action_category = 'blueprints'
     action_table_columns = ['name', 'url_prefix']

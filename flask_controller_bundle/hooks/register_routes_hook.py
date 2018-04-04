@@ -10,9 +10,9 @@ from ..routes import reduce_routes, _normalize_controller_routes, include
 
 
 class RegisterRoutesHook(AppFactoryHook):
-    name = 'routes'
-    priority = 30
     bundle_module_name = 'routes'
+    name = 'routes'
+    run_before = ['blueprints']
 
     action_category = 'routes'
     action_table_columns = ['rule', 'endpoint', 'view']

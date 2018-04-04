@@ -6,10 +6,9 @@ from ..attr_constants import TEMPLATE_FILTER_ATTR
 
 
 class RegisterTemplateFilters(AppFactoryHook):
-    name = 'template_filters'
-    priority = 30
-
     bundle_module_name = 'templates.filters'
+    bundle_override_module_name_attr = 'template_filters_module_name'
+    name = 'template_filters'
 
     action_category = 'template_filters'
     action_table_columns = ['name']

@@ -6,10 +6,9 @@ from ..attr_constants import TEMPLATE_TAG_ATTR
 
 
 class RegisterTemplateTags(AppFactoryHook):
-    name = 'template_tags'
-    priority = 30
-
     bundle_module_name = 'templates.tags'
+    bundle_override_module_name_attr = 'template_tags_module_name'
+    name = 'template_tags'
 
     action_category = 'template_tags'
     action_table_columns = ['name']
