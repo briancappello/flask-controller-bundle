@@ -83,5 +83,5 @@ class Controller(metaclass=ControllerMeta):
     def jsonify(self, data, code=HTTPStatus.OK, headers=None):
         return jsonify(data), code, headers or {}
 
-    def errors(self, errors, code=HTTPStatus.BAD_REQUEST, key='errors'):
-        return jsonify({key: errors}), code
+    def errors(self, errors, code=HTTPStatus.BAD_REQUEST, key='errors', headers=None):
+        return jsonify({key: errors}), code, headers or {}
