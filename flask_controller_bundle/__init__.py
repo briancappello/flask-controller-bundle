@@ -1,3 +1,16 @@
+"""
+    flask_controller_bundle
+    ~~~~~~~~~~~~~~~~~~~~~~~
+
+    Adds class-based views and declarative routing to Flask Unchained
+
+    :copyright: Copyright © 2018 Brian Cappello
+    :license: MIT, see LICENSE for more details
+"""
+
+__version__ = '0.1.0'
+
+
 from flask import Flask
 from flask_unchained import Bundle
 
