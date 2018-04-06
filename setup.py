@@ -13,7 +13,7 @@ with open(os.path.join(ROOT_DIR, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='Flask Controller Bundle',
-    version='0.1.0',
+    version='0.2.0',
     description='Adds class-based views and declarative routing to Flask Unchained',
     long_description=long_description,
     url='https://github.com/briancappello/flask-controller-bundle',
