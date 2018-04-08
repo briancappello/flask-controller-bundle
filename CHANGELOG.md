@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.2.1 (unreleased)
+
+* fix registering bundle static_url_path
+
 ## 0.2.0 (2018/04/06)
 
 * add `get`, `patch`, `post`, and `put` route rule helpers

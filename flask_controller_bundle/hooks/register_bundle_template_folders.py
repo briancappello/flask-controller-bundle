@@ -20,7 +20,7 @@ class _FakeBlueprint(_PackageBoundObject):
         super().__init__(bundle.module_name, bundle.template_folder)
         self.name = bundle.name
         self.static_folder = bundle.static_folder
-        self.static_url_prefix = bundle.static_url_prefix
+        self.static_url_path = bundle.static_url_path
 
     def register(self, app: Flask, options, first_registration=False):
         if self.has_static_folder:
