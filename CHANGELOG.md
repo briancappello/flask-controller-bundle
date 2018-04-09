@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 0.2.1 (unreleased)
+## 0.2.1 (2018/04/08)
 
 * fix registering bundle static_url_path
 
