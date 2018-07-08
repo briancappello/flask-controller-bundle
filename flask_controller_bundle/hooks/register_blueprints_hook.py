@@ -37,7 +37,7 @@ class RegisterBlueprintsHook(AppFactoryHook):
             return []
 
         blueprint_names = []
-        for bundle in bundle.iter_bundles():
+        for bundle in bundle.iter_class_hierarchy():
             for bp_name in getattr(bundle, 'blueprint_names', [bundle.name]):
                 if bp_name not in blueprint_names:
                     blueprint_names += [bp_name]

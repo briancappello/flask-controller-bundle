@@ -43,7 +43,7 @@ class RegisterBundleTemplateFoldersHook(AppFactoryHook):
 
     def run_hook(self, app: Flask, bundles: List[Bundle]):
         for bundle_ in reversed(bundles):
-            for bundle in bundle_.iter_bundles(reverse=False):
+            for bundle in bundle_.iter_class_hierarchy(reverse=False):
                 if bundle.template_folder or bundle.static_folder:
                     bp = _FakeBlueprint(bundle)
                     app.register_blueprint(bp)
