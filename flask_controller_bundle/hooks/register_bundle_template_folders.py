@@ -26,7 +26,8 @@ class _FakeBlueprint(_PackageBoundObject):
         if self.has_static_folder:
             app.add_url_rule(f'{self.static_url_path}/<path:filename>',
                              view_func=self.send_static_file,
-                             endpoint=f'{self.name}.static')
+                             endpoint=f'{self.name}.static',
+                             strict_slashes=True)
 
     def __repr__(self):
         return f'<BundleBlueprint "{self.name}">'
