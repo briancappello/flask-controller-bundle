@@ -7,6 +7,7 @@ from typing import *
 
 from ..attr_constants import CONTROLLER_ROUTES_ATTR, FN_ROUTES_ATTR
 from ..routes import reduce_routes, _normalize_controller_routes, include
+from ..utils import get_babel_bundle
 
 
 class RegisterRoutesHook(AppFactoryHook):
@@ -25,6 +26,7 @@ class RegisterRoutesHook(AppFactoryHook):
         routes_module = self.import_bundle_module(app_bundle)
         routes = (self.get_explicit_routes(app_bundle) if routes_module
                   else self.collect_from_bundle(app_bundle))
+        self.babel_bundle = get_babel_bundle(bundles)
         self.process_objects(app, routes)
 
     def process_objects(self, app: Flask, routes):
@@ -61,6 +63,16 @@ class RegisterRoutesHook(AppFactoryHook):
                              view_func=route.view_func,
                              **route.rule_options)
             self.log_action(route)
+
+            if self.babel_bundle:
+                self.babel_bundle.add_url_rule(
+                    app,
+                    route.full_rule,
+                    defaults=route.defaults,
+                    endpoint=route.endpoint,
+                    methods=route.methods,
+                    view_func=route.view_func,
+                    **route.rule_options)
 
     def get_explicit_routes(self, bundle: Type[Bundle]):
         if not issubclass(bundle, AppBundle):

@@ -4,6 +4,8 @@ from flask.helpers import _endpoint_from_view_func
 from flask_unchained import AppFactoryHook, Bundle
 from typing import List
 
+from ..utils import get_babel_bundle
+
 
 # FIXME test template resolution order when this is used in combination with
 # RegisterBlueprintsHook
@@ -86,6 +88,8 @@ class RegisterBundleTemplateFoldersHook(AppFactoryHook):
     action_table_converter = lambda bp: [bp.name, bp.template_folder]
 
     def run_hook(self, app: Flask, bundles: List[Bundle]):
+        self.babel_bundle = get_babel_bundle(bundles)
+
         for bundle_ in reversed(bundles):
             for bundle in bundle_.iter_class_hierarchy(reverse=False):
                 if (bundle.template_folder
@@ -102,3 +106,5 @@ class RegisterBundleTemplateFoldersHook(AppFactoryHook):
                     app.register_blueprint(bp)
                     self.log_action(bp)
 
+                    if self.babel_bundle:
+                        self.babel_bundle.register_blueprint(app, bp)

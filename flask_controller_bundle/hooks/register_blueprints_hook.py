@@ -2,6 +2,8 @@ from flask import Blueprint, Flask
 from flask_unchained import AppFactoryHook, Bundle
 from typing import *
 
+from ..utils import get_babel_bundle
+
 
 class RegisterBlueprintsHook(AppFactoryHook):
     bundle_module_name = 'views'
@@ -15,6 +17,10 @@ class RegisterBlueprintsHook(AppFactoryHook):
 
     _limit_discovery_to_local_declarations = False
 
+    def run_hook(self, app: Flask, bundles: List[Type[Bundle]]):
+        self.babel_bundle = get_babel_bundle(bundles)
+        super().run_hook(app, bundles)
+
     def process_objects(self, app: Flask, blueprints: List[Blueprint]):
         for blueprint in reversed(blueprints):
             # rstrip '/' off url_prefix because views should be declaring their
@@ -23,6 +29,9 @@ class RegisterBlueprintsHook(AppFactoryHook):
             url_prefix = (blueprint.url_prefix or '').rstrip('/')
             app.register_blueprint(blueprint, url_prefix=url_prefix)
             self.log_action(blueprint)
+
+            if self.babel_bundle:
+                self.babel_bundle.register_blueprint(app, blueprint)
 
     def collect_from_bundles(self, bundles: List[Type[Bundle]],
                              ) -> List[Blueprint]:
