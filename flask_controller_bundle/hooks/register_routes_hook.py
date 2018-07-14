@@ -12,7 +12,7 @@ from ..routes import reduce_routes, _normalize_controller_routes, include
 class RegisterRoutesHook(AppFactoryHook):
     bundle_module_name = 'routes'
     name = 'routes'
-    run_before = ['blueprints']
+    run_before = ['blueprints', 'bundle_template_folders']
 
     action_category = 'routes'
     action_table_columns = ['rule', 'endpoint', 'view']
@@ -34,13 +34,33 @@ class RegisterRoutesHook(AppFactoryHook):
             # but maybe we should at least warn the user?
             if route.should_register(app):
                 self.store.endpoints[route.endpoint] = route
-                app.add_url_rule(route.full_rule,
-                                 defaults=route.defaults,
-                                 endpoint=route.endpoint,
-                                 methods=route.methods,
-                                 view_func=route.view_func,
-                                 **route.rule_options)
-                self.log_action(route)
+
+        bundle_names = [(b.name, [cb.module_name for cb in b.iter_class_hierarchy()
+                                  if cb.has_views()])
+                        for b in app.unchained.BUNDLES]
+
+        bundle_route_endpoints = set()
+        for endpoint, route in self.store.endpoints.items():
+            module_name = route.module_name
+            for top_level_bundle_name, hierarchy in bundle_names:
+                for bundle_name in hierarchy:
+                    if module_name and module_name.startswith(bundle_name):
+                        self.store.bundle_routes[top_level_bundle_name].append(route)
+                        bundle_route_endpoints.add(endpoint)
+                        break
+
+        self.store.other_routes = [route for endpoint, route
+                                   in self.store.endpoints.items()
+                                   if endpoint not in bundle_route_endpoints]
+
+        for route in self.store.other_routes:
+            app.add_url_rule(route.full_rule,
+                             defaults=route.defaults,
+                             endpoint=route.endpoint,
+                             methods=route.methods,
+                             view_func=route.view_func,
+                             **route.rule_options)
+            self.log_action(route)
 
     def get_explicit_routes(self, bundle: Type[Bundle]):
         if not issubclass(bundle, AppBundle):

@@ -1,3 +1,5 @@
+import inspect
+
 from flask_unchained.string_utils import snake_case
 
 from .constants import _missing
@@ -27,7 +29,7 @@ class Route:
                  endpoint=None, is_member=False, methods=None, only_if=None,
                  **rule_options):
         self._blueprint = blueprint
-        self._defaults = defaults
+        self._defaults = defaults or {}
         self._endpoint = endpoint
         self._is_member = is_member
         self._methods = methods
@@ -71,12 +73,12 @@ class Route:
     @property
     def defaults(self):
         if self._defaults is _missing:
-            return None
+            return {}
         return self._defaults
 
     @defaults.setter
     def defaults(self, defaults):
-        self._defaults = defaults
+        self._defaults = defaults or {}
 
     @property
     def endpoint(self):
@@ -116,6 +118,12 @@ class Route:
     @methods.setter
     def methods(self, methods):
         self._methods = methods
+
+    @property
+    def module_name(self):
+        if not self.view_func:
+            return None
+        return inspect.getmodule(self.view_func).__name__
 
     @property
     def only_if(self):
